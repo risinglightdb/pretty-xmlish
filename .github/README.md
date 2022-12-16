@@ -50,11 +50,11 @@ Variants:
 + Variant `Array` that brutally pretty-prints an array-like data.
   + It contains a list of pretties.
 + Variant `Text` that pretty-prints a string.
-  + It contains a string.
+  + It contains a copy-on-write string.
 
 ### Record `PrettyConfig` for pretty printing configuration
 
-It contains indentation, preferred width, actual width, etc.
+It contains indentation, preferred width, etc.
 
 ## Important methods
 
