@@ -86,13 +86,24 @@ impl<'a, T: Into<Str<'a>>> From<T> for Pretty<'a> {
 }
 
 #[derive(Clone)]
-pub struct DistillOptions {
+pub struct PrettyConfig {
     pub indent: usize,
     /// Preferred width of the output
     pub width: usize,
 }
 
-impl Default for DistillOptions {
+impl PrettyConfig {
+    fn interesting(&self, base_indent: usize, pretty: &Pretty) -> usize {
+        let len = pretty.ol_len() + base_indent;
+        if len <= self.width {
+            len
+        } else {
+            todo!("break down break down!")
+        }
+    }
+}
+
+impl Default for PrettyConfig {
     fn default() -> Self {
         Self {
             indent: 2,

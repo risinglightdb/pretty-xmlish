@@ -25,6 +25,18 @@ The purpose of the API is to supersede the current implementation of SQL explain
 + The new API does not aim to be super flexible like the `pretty` crate.
   This gives us spaces to simplify the design and implementation.
 
+## Motivation
+
+I tried to use the `pretty` crate to implement SQL explain, but it turned out to be limited in many ways:
+
++ It does not support wrapping the output with beautiful ASCII art.
+  The standard Wadler-style pretty printing API only controls lines, indentation, text wrapping, etc.
+  which is not suitable for sophisticated insertion of the box-making or table-making characters.
++ It supports 
+
+However, the standard Wadler-style "algebraic" pretty printing API is well-designed and can be extended to support the features we desire.
+I saw a screenshot by @xxchan on a private slack channel that shows the SQL explain output of databend's system, which inspired me to write this RFC.
+
 ## Intended behavior
 
 + Users specify a preferred width, usually the width of the terminal,
@@ -60,4 +72,7 @@ It contains indentation, preferred width, etc.
 
 + `Pretty::ol_len(&self) -> usize`
   + Returns the length of the pretty-printed string, under a one-linear setting.
-
++ `Pretty::ol_build_string(&self, build: &mut String)`
+  + Builds the pretty-printed string, under a one-linear setting.
++ `PrettyConfig::interesting`
+  + Predicts the width and the total length of the pretty-printed string.
