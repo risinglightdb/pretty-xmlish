@@ -98,7 +98,18 @@ impl PrettyConfig {
         if len <= self.width {
             len
         } else {
-            todo!("break down break down!")
+            let new_indent = base_indent + self.indent;
+            use Pretty::*;
+            match pretty {
+                Text(s) => s.len() + new_indent,
+                Array(v) => v
+                    .iter()
+                    .map(|p| self.interesting(base_indent, p) + 1)
+                    // ^ + 1 is for the comma
+                    .max()
+                    .unwrap_or(base_indent + 1),
+                Record(name, m) => todo!("Record"),
+            }
         }
     }
 }
