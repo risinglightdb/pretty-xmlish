@@ -54,6 +54,13 @@ impl<'a> Pretty<'a> {
         }
     }
 
+    #[allow(dead_code)]
+    fn ol_to_string(&self) -> String {
+        let mut builder = String::with_capacity(self.ol_len());
+        self.ol_build_str(&mut builder);
+        builder
+    }
+
     fn ol_len(&self) -> usize {
         use Pretty::*;
         match self {
@@ -64,7 +71,7 @@ impl<'a> Pretty<'a> {
                     .map(|(k, v)| k.len() + ": ".len() + v.ol_len())
                     .sum();
                 let mid = (m.len() - 1) * ", ".len();
-                let beg = " { ".len() + " }".len() + name.len();
+                let beg = " { ".len() + " }".len() + name.chars().count();
                 mem + mid + beg
             }
             Array(v) => {
@@ -108,7 +115,9 @@ impl PrettyConfig {
                 Record(name, m) => {
                     let header = name.len() + base_indent + " {".len();
                     m.iter()
-                        .map(|(k, v)| k.len() + ": ".len() + self.interesting(new_indent, v))
+                        .map(|(k, v)| {
+                            k.chars().count() + ": ".len() + self.interesting(new_indent, v)
+                        })
                         .chain(vec![header].into_iter())
                         .max()
                         .unwrap()

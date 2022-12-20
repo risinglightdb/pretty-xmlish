@@ -15,6 +15,7 @@ fn main() {
         "Smooth".into(),
         "Ch-ch-ch-changes".into(),
         "Human after all".into(),
+        "Sofia".into(),
     ]);
     let editors = Pretty::Array(vec![
         "Emacs".into(),
