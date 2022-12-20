@@ -142,6 +142,9 @@ struct Data<'a> {
     config: &'a PrettyConfig,
 }
 impl<'a> Data<'a> {
+    fn begin_line(&mut self) {
+        self.out.push_str("# ");
+    }
     fn push(&mut self, s: &str) {
         self.out.push_str(s);
         self.already_occupied += s.len();
@@ -151,19 +154,22 @@ impl<'a> Data<'a> {
     }
     fn pusheen(&mut self) {
         self.pip(self.width - self.already_occupied);
-        self.already_occupied = 0;
         self.push(" #\n");
+        self.already_occupied = 0;
     }
 
     fn line(&mut self, pretty: &Pretty, indent: usize, need_comma: bool) {
         use Pretty::*;
-        self.push("# ");
+        self.begin_line();
         let indent_len = indent * self.config.indent;
         self.pip(indent_len);
         let ol_len = pretty.ol_len();
         if ol_len + indent_len <= self.width {
             pretty.ol_build_str(self.out);
             self.already_occupied += ol_len;
+            if need_comma {
+                self.push(",");
+            }
             self.pusheen();
         } else {
             match pretty {
@@ -179,7 +185,7 @@ impl<'a> Data<'a> {
                     for (i, e) in v.iter().enumerate() {
                         self.line(e, indent + 1, i < v.len() - 1);
                     }
-                    self.push("# ");
+                    self.begin_line();
                     self.pip(indent_len);
                     self.push("]");
                     if need_comma {
