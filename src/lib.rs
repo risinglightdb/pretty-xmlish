@@ -172,7 +172,6 @@ impl<'a> Data<'a> {
                     if need_comma {
                         self.push(",");
                     }
-                    self.pusheen();
                 }
                 Array(v) => {
                     self.push("[");
@@ -180,9 +179,16 @@ impl<'a> Data<'a> {
                     for (i, e) in v.iter().enumerate() {
                         self.line(e, indent + 1, i < v.len() - 1);
                     }
+                    self.push("# ");
+                    self.pip(indent_len);
+                    self.push("]");
+                    if need_comma {
+                        self.push(",");
+                    }
                 }
                 _ => todo!(),
             }
+            self.pusheen();
         }
     }
 }
