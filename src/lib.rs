@@ -123,31 +123,32 @@ impl PrettyConfig {
         let total_len = width + boundaries;
         out.push_str("#".repeat(total_len).as_str());
         out.push_str("\n");
-        fn line(pretty: &Pretty, dat: &mut Data) {
+        fn line(pretty: &Pretty, indent: usize, dat: &mut Data) {
             use Pretty::*;
             dat.push("# ");
+            dat.pusheen(indent * dat.config.indent);
             let ol_len = pretty.ol_len();
             if ol_len <= dat.width {
                 pretty.ol_build_str(dat.out);
-                dat.pusheen(" ", ol_len);
+                dat.pusheen(ol_len);
             } else {
                 match pretty {
                     Text(s) => {
                         dat.push(s);
                         dat.push(",");
-                        dat.pusheen(" ", 1 + s.len());
+                        dat.pusheen(1 + s.len());
                     }
                     _ => todo!(),
                 }
             }
-            dat.push(" #\n");
+            dat.eol();
         }
         let mut dat = Data {
             out,
             width,
             config: self,
         };
-        line(pretty, &mut dat);
+        line(pretty, 0, &mut dat);
         out.push_str("#".repeat(total_len).as_str());
     }
 }
@@ -161,8 +162,11 @@ impl<'a> Data<'a> {
     fn push(&mut self, s: &str) {
         self.out.push_str(s);
     }
-    fn pusheen(&mut self, ch: &str, occupied: usize) {
-        self.push(ch.repeat(self.width - occupied).as_str());
+    fn eol(&mut self) {
+        self.push(" #\n");
+    }
+    fn pusheen(&mut self, occupied: usize) {
+        self.push(" ".repeat(self.width - occupied).as_str());
     }
 }
 
