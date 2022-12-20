@@ -59,20 +59,18 @@ impl<'a> Pretty<'a> {
         match self {
             Text(s) => s.len(),
             Record(name, m) => {
-                let mem: usize = m.iter().map(|(k, v)| k.len() + 2 + v.ol_len()).sum();
-                // ^ 2 is for the ": " separator
-                let mid = (m.len() - 1) * 2;
-                // ^ 2 is for the ", " separator
-                let beg = 3 + 2 + name.len();
-                // ^ " { " and " }"
+                let mem: usize = m
+                    .iter()
+                    .map(|(k, v)| k.len() + ": ".len() + v.ol_len())
+                    .sum();
+                let mid = (m.len() - 1) * ", ".len();
+                let beg = " { ".len() + " }".len() + name.len();
                 mem + mid + beg
             }
             Array(v) => {
                 let mem: usize = v.iter().map(Self::ol_len).sum();
-                let mid = (v.len() - 1) * 2;
-                // ^ 2 is for the ", " separator
-                let beg = 2 + 2;
-                // ^ "[ " and " ]"
+                let mid = (v.len() - 1) * ", ".len();
+                let beg = "[ ".len() + " ]".len();
                 mem + mid + beg
             }
         }
@@ -101,14 +99,20 @@ impl PrettyConfig {
             let new_indent = base_indent + self.indent;
             use Pretty::*;
             match pretty {
-                Text(s) => s.len() + new_indent,
+                Text(s) => s.len() + base_indent,
                 Array(v) => v
                     .iter()
-                    .map(|p| self.interesting(base_indent, p) + 1)
-                    // ^ + 1 is for the comma
+                    .map(|p| self.interesting(new_indent, p) + ",".len())
                     .max()
-                    .unwrap_or(base_indent + 1),
-                Record(name, m) => todo!("Record"),
+                    .unwrap_or(base_indent + "[".len()),
+                Record(name, m) => {
+                    let header = name.len() + base_indent + " {".len();
+                    m.iter()
+                        .map(|(k, v)| k.len() + ": ".len() + self.interesting(new_indent, v))
+                        .chain(vec![header].into_iter())
+                        .max()
+                        .unwrap()
+                }
             }
         }
     }
