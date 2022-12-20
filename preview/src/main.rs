@@ -20,7 +20,8 @@ fn main() {
         "Emacs".into(),
         "Vim".into(),
         "Sublime Text".into(),
-        "Atom".into(),
+        // https://www.w3.org/TR/xml-entity-names/025.html
+        "Atom\u{02514}".into(),
     ]);
     let pretty = Pretty::Array(vec![
         pretty.clone(),

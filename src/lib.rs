@@ -57,7 +57,7 @@ impl<'a> Pretty<'a> {
     fn ol_len(&self) -> usize {
         use Pretty::*;
         match self {
-            Text(s) => s.len(),
+            Text(s) => s.chars().count(),
             Record(name, m) => {
                 let mem: usize = m
                     .iter()
@@ -99,7 +99,7 @@ impl PrettyConfig {
             let new_indent = base_indent + self.indent;
             use Pretty::*;
             match pretty {
-                Text(s) => s.len() + base_indent,
+                Text(s) => s.chars().count() + base_indent,
                 Array(v) => v
                     .iter()
                     .map(|p| self.interesting(new_indent, p) + ",".len())
