@@ -117,15 +117,17 @@ impl PrettyConfig {
         }
     }
 
-    fn java(&self, out: &mut String, pretty: &Pretty) {
+    pub fn java(&self, out: &mut String, pretty: &Pretty) {
         let boundaries = "# ".len() + " #".len();
-        let total_len = self.interesting(0, pretty) + boundaries;
+        let width = self.interesting(0, pretty);
+        let total_len = width + boundaries;
         out.push_str("#".repeat(total_len).as_str());
+        out.push_str("\n");
         fn line(pretty: &Pretty, dat: &mut Data) {
             use Pretty::*;
             dat.push("# ");
             let ol_len = pretty.ol_len();
-            if ol_len <= dat.total_len {
+            if ol_len <= dat.width {
                 pretty.ol_build_str(dat.out);
                 dat.pusheen(" ", ol_len);
             } else {
@@ -140,18 +142,18 @@ impl PrettyConfig {
             }
             dat.push(" #\n");
         }
-        out.push_str("#".repeat(total_len).as_str());
         let mut dat = Data {
-            total_len,
             out,
+            width,
             config: self,
         };
         line(pretty, &mut dat);
+        out.push_str("#".repeat(total_len).as_str());
     }
 }
 
 struct Data<'a> {
-    total_len: usize,
+    width: usize,
     out: &'a mut String,
     config: &'a PrettyConfig,
 }
@@ -160,7 +162,7 @@ impl<'a> Data<'a> {
         self.out.push_str(s);
     }
     fn pusheen(&mut self, ch: &str, occupied: usize) {
-        self.push(ch.repeat(self.total_len - occupied).as_str());
+        self.push(ch.repeat(self.width - occupied).as_str());
     }
 }
 
@@ -171,9 +173,4 @@ impl Default for PrettyConfig {
             width: 120,
         }
     }
-}
-
-#[test]
-fn main() {
-    println!("Hello, world!");
 }
