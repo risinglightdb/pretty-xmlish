@@ -68,7 +68,7 @@ impl<'a> Pretty<'a> {
             Record(name, m) => {
                 let mem: usize = m
                     .iter()
-                    .map(|(k, v)| k.len() + ": ".len() + v.ol_len())
+                    .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
                     .sum();
                 let mid = (m.len() - 1) * ", ".len();
                 let beg = " { ".len() + " }".len() + name.chars().count();
@@ -113,7 +113,7 @@ impl PrettyConfig {
                     .max()
                     .unwrap_or(base_indent + "[".len()),
                 Record(name, m) => {
-                    let header = name.len() + base_indent + " {".len();
+                    let header = name.chars().count() + base_indent + " {".len();
                     m.iter()
                         .map(|(k, v)| {
                             k.chars().count() + ": ".len() + self.interesting(new_indent, v)
