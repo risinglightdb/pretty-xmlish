@@ -1,7 +1,14 @@
 use data_display::*;
+#[macro_use]
+extern crate maplit;
 
 fn main() {
-    let config = PrettyConfig::default();
+    let mut config = PrettyConfig::default();
+    for arg in std::env::args() {
+        if let Some(n) = arg.parse().ok() {
+            config.width = n;
+        }
+    }
     let pretty = Pretty::Array(vec!["Lorem ipsum".into(), "2 < 1".into()]);
     let songs = Pretty::Array(vec![
         "Feel Good Inc.".into(),
@@ -9,10 +16,21 @@ fn main() {
         "Ch-ch-ch-changes".into(),
         "Human after all".into(),
     ]);
+    let editors = Pretty::Array(vec![
+        "Emacs".into(),
+        "Vim".into(),
+        "Sublime Text".into(),
+        "Atom".into(),
+    ]);
     let pretty = Pretty::Array(vec![
         pretty.clone(),
-        "Visual Studio Code".into(),
-        songs,
+        Pretty::Record(
+            "Info".into(),
+            btreemap! {
+                "Songs".into() => songs,
+                "Editors".into() => editors,
+            },
+        ),
         pretty,
     ]);
     let pretty = Pretty::Array(vec![pretty.clone(), pretty]);

@@ -117,20 +117,29 @@ impl PrettyConfig {
         }
     }
 
+    pub fn horizon(out: &mut String, total_len: usize) {
+        out.push_str("+");
+        out.push_str("-".repeat(total_len - 2).as_str());
+        out.push_str("+");
+    }
     pub fn java(&self, out: &mut String, pretty: &Pretty) {
-        let boundaries = "# ".len() + " #".len();
+        let boundaries = "| ".len() + " |".len();
         let width = self.interesting(0, pretty);
         let total_len = width + boundaries;
-        out.push_str("#".repeat(total_len).as_str());
-        out.push_str("\n");
         let mut dat = Data {
             out,
             width,
             config: self,
             already_occupied: 0,
         };
-        dat.line(pretty, 0, false);
-        out.push_str("#".repeat(total_len).as_str());
+        Self::horizon(dat.out, total_len);
+        dat.out.push_str("\n");
+
+        dat.begin_line();
+        dat.line(pretty, 0);
+        dat.pusheen();
+
+        Self::horizon(dat.out, total_len);
     }
 }
 
@@ -143,7 +152,7 @@ struct Data<'a> {
 }
 impl<'a> Data<'a> {
     fn begin_line(&mut self) {
-        self.out.push_str("# ");
+        self.out.push_str("| ");
     }
     fn push(&mut self, s: &str) {
         self.out.push_str(s);
@@ -154,47 +163,59 @@ impl<'a> Data<'a> {
     }
     fn pusheen(&mut self) {
         self.pip(self.width - self.already_occupied);
-        self.push(" #\n");
+        self.push(" |\n");
         self.already_occupied = 0;
     }
 
-    fn line(&mut self, pretty: &Pretty, indent: usize, need_comma: bool) {
+    fn line(&mut self, pretty: &Pretty, indent: usize) {
         use Pretty::*;
-        self.begin_line();
+        let self_indent_len = indent * self.config.indent;
+        let indent = indent + 1;
         let indent_len = indent * self.config.indent;
-        self.pip(indent_len);
+
         let ol_len = pretty.ol_len();
         if ol_len + indent_len <= self.width {
             pretty.ol_build_str(self.out);
             self.already_occupied += ol_len;
-            if need_comma {
-                self.push(",");
-            }
-            self.pusheen();
         } else {
             match pretty {
-                Text(s) => {
-                    self.push(s);
-                    if need_comma {
-                        self.push(",");
-                    }
-                }
+                Text(s) => self.push(s),
                 Array(v) => {
                     self.push("[");
                     self.pusheen();
                     for (i, e) in v.iter().enumerate() {
-                        self.line(e, indent + 1, i < v.len() - 1);
+                        self.begin_line();
+                        self.pip(indent_len);
+                        self.line(e, indent);
+                        if i < v.len() - 1 {
+                            self.push(",");
+                        }
+                        self.pusheen();
                     }
                     self.begin_line();
-                    self.pip(indent_len);
+                    self.pip(self_indent_len);
                     self.push("]");
-                    if need_comma {
-                        self.push(",");
-                    }
                 }
-                _ => todo!(),
+                Record(name, m) => {
+                    self.push(name);
+                    self.push(" {");
+                    self.pusheen();
+                    for (i, (k, v)) in m.iter().enumerate() {
+                        self.begin_line();
+                        self.pip(indent_len);
+                        self.push(k);
+                        self.push(": ");
+                        self.line(v, indent);
+                        if i < m.len() - 1 {
+                            self.push(",");
+                        }
+                        self.pusheen();
+                    }
+                    self.begin_line();
+                    self.pip(self_indent_len);
+                    self.push("}");
+                }
             }
-            self.pusheen();
         }
     }
 }
