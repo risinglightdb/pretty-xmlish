@@ -123,50 +123,66 @@ impl PrettyConfig {
         let total_len = width + boundaries;
         out.push_str("#".repeat(total_len).as_str());
         out.push_str("\n");
-        fn line(pretty: &Pretty, indent: usize, dat: &mut Data) {
+        fn line(pretty: &Pretty, indent: usize, dat: &mut Data, need_comma: bool) {
             use Pretty::*;
             dat.push("# ");
-            dat.pusheen(indent * dat.config.indent);
+            let indent_len = indent * dat.config.indent;
+            dat.pip(indent_len);
             let ol_len = pretty.ol_len();
-            if ol_len <= dat.width {
+            if ol_len + indent_len <= dat.width {
                 pretty.ol_build_str(dat.out);
-                dat.pusheen(ol_len);
+                dat.already_occupied += ol_len;
+                dat.pusheen();
             } else {
                 match pretty {
                     Text(s) => {
                         dat.push(s);
-                        dat.push(",");
-                        dat.pusheen(1 + s.len());
+                        if need_comma {
+                            dat.push(",");
+                        }
+                        dat.pusheen();
+                    }
+                    Array(v) => {
+                        dat.push("[");
+                        dat.pusheen();
+                        for (i, e) in v.iter().enumerate() {
+                            line(e, indent + 1, dat, i < v.len() - 1);
+                        }
                     }
                     _ => todo!(),
                 }
             }
-            dat.eol();
         }
         let mut dat = Data {
             out,
             width,
             config: self,
+            already_occupied: 0,
         };
-        line(pretty, 0, &mut dat);
+        line(pretty, 0, &mut dat, false);
         out.push_str("#".repeat(total_len).as_str());
     }
 }
 
 struct Data<'a> {
     width: usize,
+    /// Modify when out is also modified.
+    pub already_occupied: usize,
     out: &'a mut String,
     config: &'a PrettyConfig,
 }
 impl<'a> Data<'a> {
     fn push(&mut self, s: &str) {
         self.out.push_str(s);
+        self.already_occupied += s.len();
     }
-    fn eol(&mut self) {
+    fn pip(&mut self, amount: usize) {
+        self.push(" ".repeat(amount).as_str());
+    }
+    fn pusheen(&mut self) {
+        self.pip(self.width - self.already_occupied);
+        self.already_occupied = 0;
         self.push(" #\n");
-    }
-    fn pusheen(&mut self, occupied: usize) {
-        self.push(" ".repeat(self.width - occupied).as_str());
     }
 }
 
