@@ -103,22 +103,22 @@ impl PrettyConfig {
         if len <= self.width {
             len
         } else {
-            let new_indent = base_indent + self.indent;
+            let next_indent = base_indent + self.indent;
             use Pretty::*;
             match pretty {
                 Text(s) => s.chars().count() + base_indent,
                 Array(v) => v
                     .iter()
-                    .map(|p| self.interesting(new_indent, p) + ",".len())
+                    .map(|p| self.interesting(next_indent, p) + ",".len())
                     .max()
                     .unwrap_or(base_indent + "[".len()),
                 Record(name, m) => {
                     let header = name.chars().count() + base_indent + " {".len();
                     m.iter()
                         .map(|(k, v)| {
-                            k.chars().count() + ": ".len() + self.interesting(new_indent, v)
+                            k.chars().count() + ": ".len() + self.interesting(next_indent, v)
                         })
-                        .chain(vec![header].into_iter())
+                        .chain(Some(header).into_iter())
                         .max()
                         .unwrap()
                 }
