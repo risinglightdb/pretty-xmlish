@@ -123,43 +123,13 @@ impl PrettyConfig {
         let total_len = width + boundaries;
         out.push_str("#".repeat(total_len).as_str());
         out.push_str("\n");
-        fn line(pretty: &Pretty, indent: usize, dat: &mut Data, need_comma: bool) {
-            use Pretty::*;
-            dat.push("# ");
-            let indent_len = indent * dat.config.indent;
-            dat.pip(indent_len);
-            let ol_len = pretty.ol_len();
-            if ol_len + indent_len <= dat.width {
-                pretty.ol_build_str(dat.out);
-                dat.already_occupied += ol_len;
-                dat.pusheen();
-            } else {
-                match pretty {
-                    Text(s) => {
-                        dat.push(s);
-                        if need_comma {
-                            dat.push(",");
-                        }
-                        dat.pusheen();
-                    }
-                    Array(v) => {
-                        dat.push("[");
-                        dat.pusheen();
-                        for (i, e) in v.iter().enumerate() {
-                            line(e, indent + 1, dat, i < v.len() - 1);
-                        }
-                    }
-                    _ => todo!(),
-                }
-            }
-        }
         let mut dat = Data {
             out,
             width,
             config: self,
             already_occupied: 0,
         };
-        line(pretty, 0, &mut dat, false);
+        dat.line(pretty, 0, false);
         out.push_str("#".repeat(total_len).as_str());
     }
 }
@@ -183,6 +153,37 @@ impl<'a> Data<'a> {
         self.pip(self.width - self.already_occupied);
         self.already_occupied = 0;
         self.push(" #\n");
+    }
+
+    fn line(&mut self, pretty: &Pretty, indent: usize, need_comma: bool) {
+        use Pretty::*;
+        self.push("# ");
+        let indent_len = indent * self.config.indent;
+        self.pip(indent_len);
+        let ol_len = pretty.ol_len();
+        if ol_len + indent_len <= self.width {
+            pretty.ol_build_str(self.out);
+            self.already_occupied += ol_len;
+            self.pusheen();
+        } else {
+            match pretty {
+                Text(s) => {
+                    self.push(s);
+                    if need_comma {
+                        self.push(",");
+                    }
+                    self.pusheen();
+                }
+                Array(v) => {
+                    self.push("[");
+                    self.pusheen();
+                    for (i, e) in v.iter().enumerate() {
+                        self.line(e, indent + 1, i < v.len() - 1);
+                    }
+                }
+                _ => todo!(),
+            }
+        }
     }
 }
 
