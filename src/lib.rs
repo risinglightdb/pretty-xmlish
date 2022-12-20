@@ -86,7 +86,7 @@ impl<'a, T: Into<Str<'a>>> From<T> for Pretty<'a> {
 #[derive(Clone)]
 pub struct PrettyConfig {
     pub indent: usize,
-    /// Preferred width of the output
+    /// Preferred width of the output, exlusive of the boundaries.
     pub width: usize,
 }
 
@@ -115,6 +115,52 @@ impl PrettyConfig {
                 }
             }
         }
+    }
+
+    fn java(&self, out: &mut String, pretty: &Pretty) {
+        let boundaries = "# ".len() + " #".len();
+        let total_len = self.interesting(0, pretty) + boundaries;
+        out.push_str("#".repeat(total_len).as_str());
+        fn line(pretty: &Pretty, dat: &mut Data) {
+            use Pretty::*;
+            dat.push("# ");
+            let ol_len = pretty.ol_len();
+            if ol_len <= dat.total_len {
+                pretty.ol_build_str(dat.out);
+                dat.pusheen(" ", ol_len);
+            } else {
+                match pretty {
+                    Text(s) => {
+                        dat.push(s);
+                        dat.push(",");
+                        dat.pusheen(" ", 1 + s.len());
+                    }
+                    _ => todo!(),
+                }
+            }
+            dat.push(" #\n");
+        }
+        out.push_str("#".repeat(total_len).as_str());
+        let mut dat = Data {
+            total_len,
+            out,
+            config: self,
+        };
+        line(pretty, &mut dat);
+    }
+}
+
+struct Data<'a> {
+    total_len: usize,
+    out: &'a mut String,
+    config: &'a PrettyConfig,
+}
+impl<'a> Data<'a> {
+    fn push(&mut self, s: &str) {
+        self.out.push_str(s);
+    }
+    fn pusheen(&mut self, ch: &str, occupied: usize) {
+        self.push(ch.repeat(self.total_len - occupied).as_str());
     }
 }
 

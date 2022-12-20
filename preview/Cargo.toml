@@ -1,0 +1,8 @@
+[package]
+name = "data-preview"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+maplit = "1"
+data_preview = { path = "../" }
