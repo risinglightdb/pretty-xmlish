@@ -76,3 +76,10 @@ It contains indentation, preferred width, etc.
   + Builds the pretty-printed string, under a one-linear setting.
 + `PrettyConfig::interesting`
   + Predicts the width and the total length of the pretty-printed string.
++ `Data::line` (private)
+  + Generate a line, **without** the starting `|` and the ending `|` and the indentations.
+    It will try to fill the intermediate spaces and lines, but not the surrounding.
++ `PrettyConfig::horizon`
+  + Generates a line of a given length with `+` at the ends and `-` in the middle.
++ `PrettyConfig::java`
+  + Calls `interesting` to predict the output width, and then generate the beautiful output.
