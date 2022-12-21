@@ -6,6 +6,7 @@ use std::{
 
 type Str<'a> = Cow<'a, str>;
 
+/// Use `into`!!
 #[derive(Clone)]
 pub enum Pretty<'a> {
     Text(Str<'a>),
@@ -22,7 +23,7 @@ impl<'a> Pretty<'a> {
         format!("{:?}", debug).into()
     }
 
-    /// Potential optimizations: instead of using a mutable String,
+    /// Potential improvements: instead of using a mutable String,
     /// use a Write trait with monadic error reporting.
     fn ol_build_str(&self, builder: &mut String) {
         use Pretty::*;
@@ -55,6 +56,7 @@ impl<'a> Pretty<'a> {
     }
 
     #[allow(dead_code)]
+    /// For debugging purposes.
     fn ol_to_string(&self) -> String {
         let mut builder = String::with_capacity(self.ol_len());
         self.ol_build_str(&mut builder);
@@ -98,25 +100,26 @@ pub struct PrettyConfig {
 }
 
 impl PrettyConfig {
-    fn interesting(&self, base_indent: usize, pretty: &Pretty) -> usize {
-        let len = pretty.ol_len() + base_indent;
+    fn interesting(&self, base_indent: usize, pretty: &Pretty, additional: usize) -> usize {
+        let first_line_base = base_indent + additional;
+        let len = pretty.ol_len() + first_line_base;
         if len <= self.width {
             len
         } else {
             let next_indent = base_indent + self.indent;
             use Pretty::*;
             match pretty {
-                Text(s) => s.chars().count() + base_indent,
+                Text(s) => s.chars().count() + first_line_base,
                 Array(v) => v
                     .iter()
-                    .map(|p| self.interesting(next_indent, p) + ",".len())
+                    .map(|p| self.interesting(next_indent, p, 0) + ",".len())
                     .max()
-                    .unwrap_or(base_indent + "[".len()),
+                    .unwrap_or(first_line_base + "[".len()),
                 Record(name, m) => {
-                    let header = name.chars().count() + base_indent + " {".len();
+                    let header = name.chars().count() + first_line_base + " {".len();
                     m.iter()
                         .map(|(k, v)| {
-                            k.chars().count() + ": ".len() + self.interesting(next_indent, v)
+                            self.interesting(next_indent, v, k.chars().count() + ": ".len())
                         })
                         .chain(Some(header).into_iter())
                         .max()
@@ -133,9 +136,9 @@ impl PrettyConfig {
     }
     pub fn java(&self, out: &mut String, pretty: &Pretty) {
         let boundaries = "| ".len() + " |".len();
-        let width = self.interesting(0, pretty);
+        let width = self.interesting(0, pretty, 0);
         let total_len = width + boundaries;
-        let mut dat = Data {
+        let mut dat = LinedBuffer {
             out,
             width,
             config: self,
@@ -152,14 +155,14 @@ impl PrettyConfig {
     }
 }
 
-struct Data<'a> {
+struct LinedBuffer<'a> {
     width: usize,
     /// Modify when out is also modified.
     pub already_occupied: usize,
     out: &'a mut String,
     config: &'a PrettyConfig,
 }
-impl<'a> Data<'a> {
+impl<'a> LinedBuffer<'a> {
     fn begin_line(&mut self) {
         self.out.push_str("| ");
     }

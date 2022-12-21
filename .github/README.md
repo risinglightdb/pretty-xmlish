@@ -68,6 +68,12 @@ Variants:
 
 It contains indentation, preferred width, etc.
 
+### Record `LinedBuffer` for actually writing the string
+
+It contains a mutable reference to a `String`, and a `PrettyConfig`.
+It understands the intended width (precomputed by `PrettyConfig::interesting`),
+and will try to fill an incomplete line with spaces when asked so.
+
 ## Important methods
 
 + `Pretty::ol_len(&self) -> usize`
@@ -76,7 +82,7 @@ It contains indentation, preferred width, etc.
   + Builds the pretty-printed string, under a one-linear setting.
 + `PrettyConfig::interesting`
   + Predicts the width and the total length of the pretty-printed string.
-+ `Data::line` (private)
++ `LinedBuffer::line` (private)
   + Generate a line, **without** the starting `|` and the ending `|` and the indentations.
     It will try to fill the intermediate spaces and lines, but not the surrounding.
 + `PrettyConfig::horizon`
