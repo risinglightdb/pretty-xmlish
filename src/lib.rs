@@ -8,6 +8,8 @@ type Str<'a> = Cow<'a, str>;
 
 pub mod ascii;
 pub use ascii::*;
+pub mod unicode;
+pub use unicode::*;
 
 /// Use `into`!!
 #[derive(Clone)]
