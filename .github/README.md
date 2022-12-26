@@ -76,16 +76,16 @@ and will try to fill an incomplete line with spaces when asked so.
 
 ## Important methods
 
-+ `Pretty::ol_len(&self) -> usize`
++ `Pretty::ol_len_*(&self) -> usize`
   + Returns the length of the pretty-printed string, under a one-linear setting.
-+ `Pretty::ol_build_string(&self, build: &mut String)`
++ `Pretty::ol_build_string_*(&self, build: &mut String)`
   + Builds the pretty-printed string, under a one-linear setting.
-+ `PrettyConfig::interesting`
++ `PrettyConfig::interesting_*`
   + Predicts the width and the total length of the pretty-printed string.
-+ `LinedBuffer::line` (private)
++ `LinedBuffer::line_*` (private)
   + Generate a line, **without** the starting `|` and the ending `|` and the indentations.
     It will try to fill the intermediate spaces and lines, but not the surrounding.
 + `PrettyConfig::horizon`
   + Generates a line of a given length with `+` at the ends and `-` in the middle.
-+ `PrettyConfig::java`
-  + Calls `interesting` to predict the output width, and then generate the beautiful output.
++ `PrettyConfig::ascii`
+  + Calls `interesting` to predict the output width, and then generate the beautiful output, using pure ASCII style.
