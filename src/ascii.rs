@@ -43,12 +43,14 @@ impl PrettyConfig {
                     .unwrap_or(first_line_base + "[".len()),
                 Record(xml) => {
                     let header = xml.name.chars().count() + first_line_base + " {".len();
-                    xml.fields
-                        .iter()
+                    let children =
+                        (xml.children.iter()).map(|p| self.interesting_ascii(next_indent, p, 0));
+                    (xml.fields.iter())
                         .map(|(k, v)| {
                             self.interesting_ascii(next_indent, v, k.chars().count() + ": ".len())
                         })
                         .chain(Some(header).into_iter())
+                        .chain(children)
                         .max()
                         .unwrap()
                 }
