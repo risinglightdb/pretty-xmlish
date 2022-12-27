@@ -20,7 +20,11 @@ impl PrettyConfig {
         } else {
             let next_indent = base_indent + self.indent;
             use Pretty::*;
-            todo!()
+            match pretty {
+                Text(s) => s.chars().count() + first_line_base,
+                Array(list) => todo!(),
+                Record(xml) => todo!(),
+            }
         }
     }
 }
