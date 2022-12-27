@@ -11,11 +11,18 @@ pub use ascii::*;
 pub mod unicode;
 pub use unicode::*;
 
+#[derive(Clone)]
+pub struct XmlNode<'a> {
+    name: Str<'a>,
+    fields: BTreeMap<Str<'a>, Pretty<'a>>,
+    children: Vec<Pretty<'a>>,
+}
+
 /// Use `into`!!
 #[derive(Clone)]
 pub enum Pretty<'a> {
     Text(Str<'a>),
-    Record(Str<'a>, BTreeMap<Str<'a>, Self>),
+    Record(XmlNode<'a>),
     Array(Vec<Self>),
 }
 
@@ -28,16 +35,16 @@ impl<'a> Pretty<'a> {
         format!("{:?}", debug).into()
     }
 
-        /// Potential improvements: instead of using a mutable String,
+    /// Potential improvements: instead of using a mutable String,
     /// use a Write trait with monadic error reporting.
     pub(crate) fn ol_build_str_ascii(&self, builder: &mut String) {
         use Pretty::*;
         match self {
             Text(s) => builder.push_str(s),
-            Record(name, m) => {
-                builder.push_str(name);
+            Record(xml) => {
+                builder.push_str(&xml.name);
                 builder.push_str(" { ");
-                for (i, (k, v)) in m.iter().enumerate() {
+                for (i, (k, v)) in xml.fields.iter().enumerate() {
                     if i > 0 {
                         builder.push_str(", ");
                     }
@@ -72,13 +79,13 @@ impl<'a> Pretty<'a> {
         use Pretty::*;
         match self {
             Text(s) => s.chars().count(),
-            Record(name, m) => {
-                let mem: usize = m
+            Record (xml) => {
+                let mem: usize = xml.fields
                     .iter()
                     .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
                     .sum();
-                let mid = (m.len() - 1) * ", ".len();
-                let beg = " { ".len() + " }".len() + name.chars().count();
+                let mid = (xml.fields.len() - 1) * ", ".len();
+                let beg = " { ".len() + " }".len() + xml.name.chars().count();
                 mem + mid + beg
             }
             Array(v) => {

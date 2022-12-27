@@ -41,9 +41,10 @@ impl PrettyConfig {
                     .map(|p| self.interesting_ascii(next_indent, p, 0) + ",".len())
                     .max()
                     .unwrap_or(first_line_base + "[".len()),
-                Record(name, m) => {
-                    let header = name.chars().count() + first_line_base + " {".len();
-                    m.iter()
+                Record(xml) => {
+                    let header = xml.name.chars().count() + first_line_base + " {".len();
+                    xml.fields
+                        .iter()
                         .map(|(k, v)| {
                             self.interesting_ascii(next_indent, v, k.chars().count() + ": ".len())
                         })
@@ -86,17 +87,17 @@ impl<'a> LinedBuffer<'a> {
                     self.pip(self_indent_len);
                     self.push("]");
                 }
-                Record(name, m) => {
-                    self.push(name);
+                Record(xml) => {
+                    self.push(&xml.name);
                     self.push(" {");
                     self.pusheen();
-                    for (i, (k, v)) in m.iter().enumerate() {
+                    for (i, (k, v)) in xml.fields.iter().enumerate() {
                         self.begin_line();
                         self.pip(indent_len);
                         self.push(k);
                         self.push(": ");
                         self.line_ascii(v, indent);
-                        if i < m.len() - 1 {
+                        if i < xml.fields.len() - 1 {
                             self.push(",");
                         }
                         self.pusheen();
