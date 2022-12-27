@@ -107,6 +107,11 @@ impl<'a> LinedBuffer<'a> {
                     self.begin_line();
                     self.pip(self_indent_len);
                     self.push("}");
+                    self.pusheen();
+                    self.begin_line();
+                    for child in xml.children.iter() {
+                        self.line_ascii(child, indent);
+                    }
                 }
             }
         }
