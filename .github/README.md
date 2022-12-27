@@ -5,10 +5,11 @@ authors:
 start_date: "2022/12/01"
 ---
 
-# Wadler-style pretty printing API for SQL
+# Wadler-style algebraic pretty printing API for SQL
 
 This RFC proposes a new API for pretty-printing pseudo "structures".
-The purpose of the API is to supersede the current implementation of SQL explain.
+The purpose of the API is to supersede the current implementation of SQL explain,
+and maybe more.
 
 ## Goals
 
@@ -35,7 +36,8 @@ I tried to use the `pretty` crate to implement SQL explain, but it turned out to
 + It supports horizontal and vertical "squeezing" of the output, but we only need horizontal squeezing.
 
 However, the standard Wadler-style "algebraic" pretty printing API is well-designed and can be extended to support the features we desire.
-I saw a screenshot by @xxchan on a private slack channel that shows the SQL explain output of databend's system, which inspired me to write this RFC.
+I saw a screenshot by `@xxchan` on a private Slack channel that shows the SQL explain output of databend's system,
+which inspired me to write this RFC.
 
 ## Intended behavior
 
@@ -49,16 +51,17 @@ I saw a screenshot by @xxchan on a private slack channel that shows the SQL expl
 
 ## Types
 
-### Enum `Pretty` for pretty printing
+### Types `XmlNode` and `Pretty` for pretty printing data
 
-+ It represents an object that can be displayed as a string.
++ These enums are inductive-inductively defined which represents an object that can be displayed as a string.
 + The width and height of the pretty-printed string can be calculated in advance.
-+ Objects that implement `Pretty` are hereafter called "pretty" or "pretties".
++ Instances of the enum `Pretty` are hereafter called "pretty" or "pretties".
++ Instances of struct `XmlNode` represent XML-like data that has a name, a list of attributes, and a list of children nodes.
 
-Variants:
+Variants of `Pretty`:
 
-+ Variant `Record` that brutally pretty-prints a struct-like data.
-  + It contains a list of name-pretty pairs.
++ Variant `Record` that brutally pretty-prints an XML-like data.
+  + It contains an XML node.
 + Variant `Array` that brutally pretty-prints an array-like data.
   + It contains a list of pretties.
 + Variant `Text` that pretty-prints a string.
@@ -71,7 +74,7 @@ It contains indentation, preferred width, etc.
 ### Record `LinedBuffer` for actually writing the string
 
 It contains a mutable reference to a `String`, and a `PrettyConfig`.
-It understands the intended width (precomputed by `PrettyConfig::interesting`),
+It understands the intended width (precomputed by `PrettyConfig::interesting_*`),
 and will try to fill an incomplete line with spaces when asked so.
 
 ## Important methods
