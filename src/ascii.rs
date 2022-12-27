@@ -1,69 +1,5 @@
 use crate::{LinedBuffer, Pretty, PrettyConfig};
 
-impl<'a> Pretty<'a> {
-    /// Potential improvements: instead of using a mutable String,
-    /// use a Write trait with monadic error reporting.
-    pub(crate) fn ol_build_str_ascii(&self, builder: &mut String) {
-        use Pretty::*;
-        match self {
-            Text(s) => builder.push_str(s),
-            Record(name, m) => {
-                builder.push_str(name);
-                builder.push_str(" { ");
-                for (i, (k, v)) in m.iter().enumerate() {
-                    if i > 0 {
-                        builder.push_str(", ");
-                    }
-                    builder.push_str(k);
-                    builder.push_str(": ");
-                    v.ol_build_str_ascii(builder);
-                }
-                builder.push_str(" }");
-            }
-            Array(v) => {
-                builder.push_str("[ ");
-                for (i, e) in v.iter().enumerate() {
-                    if i > 0 {
-                        builder.push_str(", ");
-                    }
-                    e.ol_build_str_ascii(builder);
-                }
-                builder.push_str(" ]");
-            }
-        }
-    }
-
-    #[allow(dead_code)]
-    /// For debugging purposes.
-    fn ol_to_string(&self) -> String {
-        let mut builder = String::with_capacity(self.ol_len_ascii());
-        self.ol_build_str_ascii(&mut builder);
-        builder
-    }
-
-    pub(crate) fn ol_len_ascii(&self) -> usize {
-        use Pretty::*;
-        match self {
-            Text(s) => s.chars().count(),
-            Record(name, m) => {
-                let mem: usize = m
-                    .iter()
-                    .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len_ascii())
-                    .sum();
-                let mid = (m.len() - 1) * ", ".len();
-                let beg = " { ".len() + " }".len() + name.chars().count();
-                mem + mid + beg
-            }
-            Array(v) => {
-                let mem: usize = v.iter().map(Self::ol_len_ascii).sum();
-                let mid = (v.len() - 1) * ", ".len();
-                let beg = "[ ".len() + " ]".len();
-                mem + mid + beg
-            }
-        }
-    }
-}
-
 impl PrettyConfig {
     pub fn ascii(&self, out: &mut String, pretty: &Pretty) {
         let boundaries = "| ".len() + " |".len();
@@ -92,7 +28,7 @@ impl PrettyConfig {
         additional: usize,
     ) -> usize {
         let first_line_base = base_indent + additional;
-        let len = pretty.ol_len_ascii() + first_line_base;
+        let len = pretty.ol_len() + first_line_base;
         if len <= self.width {
             len
         } else {
@@ -127,7 +63,7 @@ impl<'a> LinedBuffer<'a> {
         let indent = indent + 1;
         let indent_len = indent * self.config.indent;
 
-        let ol_len = pretty.ol_len_ascii();
+        let ol_len = pretty.ol_len();
         if ol_len + indent_len <= self.width {
             pretty.ol_build_str_ascii(self.out);
             self.already_occupied += ol_len;
