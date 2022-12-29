@@ -22,8 +22,15 @@ impl PrettyConfig {
             use Pretty::*;
             match pretty {
                 Text(s) => s.chars().count() + first_line_base,
-                Array(list) => todo!(),
-                Record(xml) => todo!(),
+                Array(list) => list
+                    .iter()
+                    .map(|p| self.interesting_ascii(next_indent, p, 0) + ",".len())
+                    .max()
+                    .unwrap_or(first_line_base + "[".len()),
+                Record(xml) => {
+                    let header = xml.name.chars().count() + first_line_base + ":".len();
+                    todo!()
+                }
             }
         }
     }
