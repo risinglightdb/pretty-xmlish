@@ -2,6 +2,7 @@ use std::{
     borrow::Cow,
     collections::BTreeMap,
     fmt::{Debug, Display},
+    iter::repeat,
 };
 
 type Str<'a> = Cow<'a, str>;
@@ -84,8 +85,9 @@ impl<'a> Pretty<'a> {
         use Pretty::*;
         match self {
             Text(s) => s.chars().count(),
-            Record (xml) => {
-                let mem: usize = xml.fields
+            Record(xml) => {
+                let mem: usize = xml
+                    .fields
                     .iter()
                     .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
                     .sum();
@@ -119,7 +121,7 @@ pub struct PrettyConfig {
 impl PrettyConfig {
     pub fn horizon(out: &mut String, total_len: usize) {
         out.push_str("+");
-        out.push_str("-".repeat(total_len - 2).as_str());
+        out.extend(repeat("-").take(total_len - 2));
         out.push_str("+");
     }
 }

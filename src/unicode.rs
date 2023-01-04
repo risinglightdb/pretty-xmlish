@@ -1,3 +1,5 @@
+use std::iter::repeat;
+
 use crate::{LinedBuffer, Pretty, PrettyConfig, Str};
 
 /// https://www.w3.org/TR/xml-entity-names/025.html
@@ -47,6 +49,12 @@ impl PrettyConfig {
     }
 }
 
+fn append_str(mut base: Str, action: impl FnOnce(&mut String)) -> Str {
+    let x = base.to_mut();
+    action(x);
+    base
+}
+
 impl<'a> LinedBuffer<'a> {
     pub(crate) fn line_unicode(&mut self, pretty: &Pretty, prefix: Str) {
         use Pretty::*;
@@ -75,16 +83,25 @@ impl<'a> LinedBuffer<'a> {
                 Record(xml) => {
                     self.push(&xml.name);
                     self.pusheen();
-                    let mut cont_prefix = prefix.clone();
-                    {
-                        let editor = cont_prefix.to_mut();
-                        if self.config.indent > 0 {
+                    let cont_prefix = append_str(prefix.clone(), |editor| {
+                        let mut remaining = self.config.indent;
+                        if remaining > 1 {
                             editor.push(characters::UP_DOWN);
+                            remaining -= 1;
                         }
-                    }
+                        editor.extend(repeat(' ').take(remaining - 1));
+                    });
+                    let fields_prefix = append_str(prefix.clone(), |editor| {
+                    });
+                    let last_field_prefix = append_str(prefix, |editor| {
+                    });
                     for (i, (k, v)) in xml.fields.iter().enumerate() {
                         self.begin_line();
-                        self.push(&prefix);
+                        self.push(if i < xml.fields.len() - 1 {
+                            &fields_prefix
+                        } else {
+                            &last_field_prefix
+                        });
                         self.push(k);
                         self.push(": ");
                         self.line_unicode(v, cont_prefix.clone());
