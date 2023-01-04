@@ -5,10 +5,10 @@ use crate::{LinedBuffer, Pretty, PrettyConfig, Str};
 /// https://www.w3.org/TR/xml-entity-names/025.html
 /// These unicode characters are assumed to have length 1!
 mod characters {
-    pub const UP_RIGHT: char = '\u{2514}';
-    pub const UP_RIGHT_DOWN: char = '\u{251C}';
-    pub const LEFT_RIGHT: char = '\u{2500}';
-    pub const UP_DOWN: char = '\u{2502}';
+    pub const UR: char = '\u{2514}';
+    pub const URD: char = '\u{251C}';
+    pub const LR: char = '\u{2500}';
+    pub const UD: char = '\u{2502}';
 }
 
 impl PrettyConfig {
@@ -116,10 +116,9 @@ impl<'a> LinedBuffer<'a> {
                     self.push(&xml.name);
                     self.pusheen();
                     let idt = self.config.indent;
-                    let cont_prefix = append_prefix(prefix.clone(), idt, UP_DOWN, ' ');
-                    let fields_prefix =
-                        append_prefix(prefix.clone(), idt, UP_RIGHT_DOWN, LEFT_RIGHT);
-                    let last_field_prefix = append_prefix(prefix, idt, UP_RIGHT, LEFT_RIGHT);
+                    let cont_prefix = append_prefix(prefix.clone(), idt, UD, ' ');
+                    let fields_prefix = append_prefix(prefix.clone(), idt, URD, LR);
+                    let last_field_prefix = append_prefix(prefix, idt, UR, LR);
                     for (i, (k, v)) in xml.fields.iter().enumerate() {
                         self.begin_line();
                         self.push(if i < xml.fields.len() - 1 {
