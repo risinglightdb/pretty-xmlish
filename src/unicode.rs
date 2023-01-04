@@ -12,6 +12,26 @@ mod characters {
 }
 
 impl PrettyConfig {
+    pub fn unicode(&self, out: &mut String, pretty: &Pretty) {
+        let boundaries = "| ".len() + " |".len();
+        let width = self.interesting_unicode(0, pretty, 0);
+        let total_len = width + boundaries;
+        let mut dat = LinedBuffer {
+            out,
+            width,
+            config: self,
+            already_occupied: 0,
+        };
+        Self::horizon(dat.out, total_len);
+        dat.out.push_str("\n");
+
+        dat.begin_line();
+        dat.line_unicode(pretty, Default::default());
+        dat.pusheen();
+
+        Self::horizon(dat.out, total_len);
+    }
+
     pub(crate) fn interesting_unicode(
         &self,
         base_indent: usize,
@@ -55,6 +75,17 @@ fn append_str(mut base: Str, action: impl FnOnce(&mut String)) -> Str {
     base
 }
 
+fn append_prefix(base: Str, indent: usize, start: char, fill: char) -> Str {
+    append_str(base, |editor| {
+        let mut remaining = indent;
+        if remaining > 1 {
+            editor.push(start);
+            remaining -= 1;
+        }
+        editor.extend(repeat(fill).take(remaining - 1));
+    })
+}
+
 impl<'a> LinedBuffer<'a> {
     pub(crate) fn line_unicode(&mut self, pretty: &Pretty, prefix: Str) {
         use Pretty::*;
@@ -83,18 +114,11 @@ impl<'a> LinedBuffer<'a> {
                 Record(xml) => {
                     self.push(&xml.name);
                     self.pusheen();
-                    let cont_prefix = append_str(prefix.clone(), |editor| {
-                        let mut remaining = self.config.indent;
-                        if remaining > 1 {
-                            editor.push(characters::UP_DOWN);
-                            remaining -= 1;
-                        }
-                        editor.extend(repeat(' ').take(remaining - 1));
-                    });
-                    let fields_prefix = append_str(prefix.clone(), |editor| {
-                    });
-                    let last_field_prefix = append_str(prefix, |editor| {
-                    });
+                    let idt = self.config.indent;
+                    let cont_prefix = append_prefix(prefix.clone(), idt, characters::UP_DOWN, ' ');
+                    let fields_prefix =
+                        append_prefix(prefix.clone(), idt, characters::UP_RIGHT_DOWN, '-');
+                    let last_field_prefix = append_prefix(prefix, idt, characters::UP_RIGHT, '-');
                     for (i, (k, v)) in xml.fields.iter().enumerate() {
                         self.begin_line();
                         self.push(if i < xml.fields.len() - 1 {
@@ -106,9 +130,8 @@ impl<'a> LinedBuffer<'a> {
                         self.push(": ");
                         self.line_unicode(v, cont_prefix.clone());
                         self.pusheen();
+                        // TODO: children
                     }
-
-                    todo!()
                 }
             }
         }
