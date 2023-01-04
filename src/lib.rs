@@ -86,9 +86,7 @@ impl<'a> Pretty<'a> {
         match self {
             Text(s) => s.chars().count(),
             Record(xml) => {
-                let mem: usize = xml
-                    .fields
-                    .iter()
+                let mem: usize = (xml.fields.iter())
                     .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
                     .sum();
                 let mid = (xml.fields.len() - 1) * ", ".len();

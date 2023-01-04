@@ -32,6 +32,13 @@ fn main() {
         },
         children: Default::default(),
     };
+    // let xml = XmlNode {
+    //     name: "Outer info".into(),
+    //     fields: btreemap! {
+    //         "Demo field".into() => "233".into(),
+    //     },
+    //     children: vec![Pretty::Record(xml.clone()), Pretty::Record(xml)],
+    // };
     let pretty = Pretty::Array(vec![pretty.clone(), Pretty::Record(xml), pretty]);
     let pretty = Pretty::Array(vec![pretty.clone(), pretty]);
     let mut out = String::new();

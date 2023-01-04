@@ -6,6 +6,7 @@ use crate::{LinedBuffer, Pretty, PrettyConfig, Str};
 /// These unicode characters are assumed to have length 1!
 mod characters {
     pub const UR: char = '\u{2514}';
+    pub const DR: char = '\u{250C}';
     pub const URD: char = '\u{251C}';
     pub const LR: char = '\u{2500}';
     pub const UD: char = '\u{2502}';
