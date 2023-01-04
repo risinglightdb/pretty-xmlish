@@ -19,9 +19,9 @@ pub use unicode::*;
 
 #[derive(Clone)]
 pub struct XmlNode<'a> {
-    name: Str<'a>,
-    fields: BTreeMap<Str<'a>, Pretty<'a>>,
-    children: Vec<Pretty<'a>>,
+    pub name: Str<'a>,
+    pub fields: BTreeMap<Str<'a>, Pretty<'a>>,
+    pub children: Vec<Pretty<'a>>,
 }
 
 /// Use `into`!!
@@ -139,7 +139,7 @@ impl<'a> LinedBuffer<'a> {
     }
     fn push(&mut self, s: &str) {
         self.out.push_str(s);
-        self.already_occupied += s.len();
+        self.already_occupied += s.chars().count();
     }
     fn pip(&mut self, amount: usize) {
         self.push(" ".repeat(amount).as_str());
@@ -154,7 +154,7 @@ impl<'a> LinedBuffer<'a> {
 impl Default for PrettyConfig {
     fn default() -> Self {
         Self {
-            indent: 2,
+            indent: 4,
             width: 120,
         }
     }

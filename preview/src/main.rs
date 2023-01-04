@@ -24,19 +24,17 @@ fn main() {
         // https://www.w3.org/TR/xml-entity-names/025.html
         "Atom\u{02514}".into(),
     ]);
-    let pretty = Pretty::Array(vec![
-        pretty.clone(),
-        Pretty::Record(
-            "Info".into(),
-            btreemap! {
-                "Songs".into() => songs,
-                "Editors".into() => editors,
-            },
-        ),
-        pretty,
-    ]);
+    let xml = XmlNode {
+        name: "Info".into(),
+        fields: btreemap! {
+            "Songs".into() => songs,
+            "Editors".into() => editors,
+        },
+        children: Default::default(),
+    };
+    let pretty = Pretty::Array(vec![pretty.clone(), Pretty::Record(xml), pretty]);
     let pretty = Pretty::Array(vec![pretty.clone(), pretty]);
     let mut out = String::new();
-    config.java(&mut out, &pretty);
+    config.unicode(&mut out, &pretty);
     println!("{}", out);
 }

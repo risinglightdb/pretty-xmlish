@@ -26,7 +26,7 @@ impl PrettyConfig {
         dat.out.push_str("\n");
 
         dat.begin_line();
-        dat.line_unicode(pretty, Default::default());
+        dat.line_unicode(pretty, 0, Default::default());
         dat.pusheen();
 
         Self::horizon(dat.out, total_len);
@@ -83,14 +83,16 @@ fn append_prefix(base: Str, indent: usize, start: char, fill: char) -> Str {
             remaining -= 1;
         }
         editor.extend(repeat(fill).take(remaining - 1));
+        editor.push(' ');
     })
 }
 
 impl<'a> LinedBuffer<'a> {
-    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, prefix: Str) {
+    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, current_indent: usize, prefix: Str) {
         use Pretty::*;
-        let self_indent_len = prefix.len();
-        let indent_len = self_indent_len + self.config.indent;
+        let current_indent = current_indent + 1;
+        let indent_len = current_indent * self.config.indent;
+
         let ol_len = pretty.ol_len();
         if ol_len + indent_len <= self.width {
             pretty.ol_build_str_ascii(self.out);
@@ -101,13 +103,14 @@ impl<'a> LinedBuffer<'a> {
                 Array(list) => {
                     self.push("[");
                     let mut first = true;
+                    let prefix = append_prefix(prefix, self.config.indent, ' ', ' ');
                     for p in list {
                         if first {
                             first = false;
                         } else {
                             self.push(", ");
                         }
-                        self.line_unicode(p, prefix.clone());
+                        self.line_unicode(p, current_indent, prefix.clone());
                     }
                     self.push("]");
                 }
@@ -128,7 +131,7 @@ impl<'a> LinedBuffer<'a> {
                         });
                         self.push(k);
                         self.push(": ");
-                        self.line_unicode(v, cont_prefix.clone());
+                        self.line_unicode(v, current_indent, cont_prefix.clone());
                         self.pusheen();
                         // TODO: children
                     }
