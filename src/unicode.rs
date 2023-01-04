@@ -112,13 +112,14 @@ impl<'a> LinedBuffer<'a> {
                     self.push("]");
                 }
                 Record(xml) => {
+                    use characters::*;
                     self.push(&xml.name);
                     self.pusheen();
                     let idt = self.config.indent;
-                    let cont_prefix = append_prefix(prefix.clone(), idt, characters::UP_DOWN, ' ');
+                    let cont_prefix = append_prefix(prefix.clone(), idt, UP_DOWN, ' ');
                     let fields_prefix =
-                        append_prefix(prefix.clone(), idt, characters::UP_RIGHT_DOWN, '-');
-                    let last_field_prefix = append_prefix(prefix, idt, characters::UP_RIGHT, '-');
+                        append_prefix(prefix.clone(), idt, UP_RIGHT_DOWN, LEFT_RIGHT);
+                    let last_field_prefix = append_prefix(prefix, idt, UP_RIGHT, LEFT_RIGHT);
                     for (i, (k, v)) in xml.fields.iter().enumerate() {
                         self.begin_line();
                         self.push(if i < xml.fields.len() - 1 {
