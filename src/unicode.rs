@@ -1,12 +1,12 @@
-use crate::{LinedBuffer, Pretty, PrettyConfig};
+use crate::{LinedBuffer, Pretty, PrettyConfig, Str};
 
 /// https://www.w3.org/TR/xml-entity-names/025.html
 /// These unicode characters are assumed to have length 1!
 mod characters {
-    const UP_RIGHT: char = '\u{2514}';
-    const UP_RIGHT_DOWN: char = '\u{251C}';
-    const LEFT_RIGHT: char = '\u{2500}';
-    const UP_DOWN: char = '\u{2502}';
+    pub const UP_RIGHT: char = '\u{2514}';
+    pub const UP_RIGHT_DOWN: char = '\u{251C}';
+    pub const LEFT_RIGHT: char = '\u{2500}';
+    pub const UP_DOWN: char = '\u{2502}';
 }
 
 impl PrettyConfig {
@@ -48,7 +48,7 @@ impl PrettyConfig {
 }
 
 impl<'a> LinedBuffer<'a> {
-    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, prefix: &mut String) {
+    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, prefix: Str) {
         use Pretty::*;
         let self_indent_len = prefix.len();
         let indent_len = self_indent_len + self.config.indent;
@@ -68,11 +68,29 @@ impl<'a> LinedBuffer<'a> {
                         } else {
                             self.push(", ");
                         }
-                        self.line_unicode(p, prefix);
+                        self.line_unicode(p, prefix.clone());
                     }
                     self.push("]");
                 }
                 Record(xml) => {
+                    self.push(&xml.name);
+                    self.pusheen();
+                    let mut cont_prefix = prefix.clone();
+                    {
+                        let editor = cont_prefix.to_mut();
+                        if self.config.indent > 0 {
+                            editor.push(characters::UP_DOWN);
+                        }
+                    }
+                    for (i, (k, v)) in xml.fields.iter().enumerate() {
+                        self.begin_line();
+                        self.push(&prefix);
+                        self.push(k);
+                        self.push(": ");
+                        self.line_unicode(v, cont_prefix.clone());
+                        self.pusheen();
+                    }
+
                     todo!()
                 }
             }

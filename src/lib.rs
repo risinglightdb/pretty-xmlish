@@ -5,6 +5,10 @@ use std::{
 };
 
 type Str<'a> = Cow<'a, str>;
+/// This is recommended by `@rami3l` to supercede `Vec<Pretty>`.
+/// Why not use this? Because Rust wouldn't let me!
+/// https://github.com/rust-lang/rust/issues/23714
+#[allow(dead_code)]
 type Pretties<'a> = Cow<'a, [Pretty<'a>]>;
 
 pub mod ascii;
