@@ -5,6 +5,7 @@ use std::{
 };
 
 type Str<'a> = Cow<'a, str>;
+type Pretties<'a> = Cow<'a, [Pretty<'a>]>;
 
 pub mod ascii;
 pub use ascii::*;

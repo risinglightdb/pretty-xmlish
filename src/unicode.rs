@@ -46,3 +46,36 @@ impl PrettyConfig {
         }
     }
 }
+
+impl<'a> LinedBuffer<'a> {
+    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, prefix: &mut String) {
+        use Pretty::*;
+        let self_indent_len = prefix.len();
+        let indent_len = self_indent_len + self.config.indent;
+        let ol_len = pretty.ol_len();
+        if ol_len + indent_len <= self.width {
+            pretty.ol_build_str_ascii(self.out);
+            self.already_occupied += ol_len;
+        } else {
+            match pretty {
+                Text(s) => self.push(s),
+                Array(list) => {
+                    self.push("[");
+                    let mut first = true;
+                    for p in list {
+                        if first {
+                            first = false;
+                        } else {
+                            self.push(", ");
+                        }
+                        self.line_unicode(p, prefix);
+                    }
+                    self.push("]");
+                }
+                Record(xml) => {
+                    todo!()
+                }
+            }
+        }
+    }
+}
