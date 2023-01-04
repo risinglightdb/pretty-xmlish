@@ -32,8 +32,9 @@ I tried to use the `pretty` crate to implement SQL explain, but it turned out to
 
 + The standard Wadler-style pretty printing API only controls lines, indentation, text wrapping, etc.
   which is not suitable for sophisticated insertion of the box-making or table-making characters.
-+ It does not support "wrapping" the output in any ways.
-+ It supports horizontal and vertical "squeezing" of the output, but we only need horizontal squeezing.
++ It does not support "wrapping" the output in any ways. We want to make a big "box" around the output.
++ It supports horizontal and vertical "squeezing" of the output (say, limit the max column/line numbers,
+  and try to fit in by inserting/removing new lines), but we only need horizontal squeezing.
 
 However, the standard Wadler-style "algebraic" pretty printing API is well-designed and can be extended to support the features we desire.
 I saw a screenshot by `@xxchan` on a private Slack channel that shows the SQL explain output of databend's system,
