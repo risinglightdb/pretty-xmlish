@@ -36,5 +36,7 @@ fn main() {
     let pretty = Pretty::Array(vec![pretty.clone(), pretty]);
     let mut out = String::new();
     config.unicode(&mut out, &pretty);
+    out.push('\n');
+    config.ascii(&mut out, &pretty);
     println!("{}", out);
 }

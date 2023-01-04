@@ -102,16 +102,16 @@ impl<'a> LinedBuffer<'a> {
                 Text(s) => self.push(s),
                 Array(list) => {
                     self.push("[");
-                    let mut first = true;
-                    let prefix = append_prefix(prefix, self.config.indent, ' ', ' ');
+                    self.pusheen();
+                    let el_prefix = append_prefix(prefix.clone(), self.config.indent, ' ', ' ');
                     for p in list {
-                        if first {
-                            first = false;
-                        } else {
-                            self.push(", ");
-                        }
-                        self.line_unicode(p, current_indent, prefix.clone());
+                        self.begin_line();
+                        self.push(&el_prefix);
+                        self.line_unicode(p, current_indent, el_prefix.clone());
+                        self.pusheen();
                     }
+                    self.begin_line();
+                    self.push(&prefix);
                     self.push("]");
                 }
                 Record(xml) => {
@@ -120,21 +120,26 @@ impl<'a> LinedBuffer<'a> {
                     self.pusheen();
                     let idt = self.config.indent;
                     let cont_prefix = append_prefix(prefix.clone(), idt, UD, ' ');
+                    let last_cont_prefix = append_prefix(prefix.clone(), idt, ' ', ' ');
                     let fields_prefix = append_prefix(prefix.clone(), idt, URD, LR);
                     let last_field_prefix = append_prefix(prefix, idt, UR, LR);
                     for (i, (k, v)) in xml.fields.iter().enumerate() {
                         self.begin_line();
-                        self.push(if i < xml.fields.len() - 1 {
-                            &fields_prefix
+                        let is_not_last_line = i < xml.fields.len() - 1;
+                        let (cont_prefix, fields_prefix) = if is_not_last_line {
+                            (&cont_prefix, &fields_prefix)
                         } else {
-                            &last_field_prefix
-                        });
+                            (&last_cont_prefix, &last_field_prefix)
+                        };
+                        self.push(&fields_prefix);
                         self.push(k);
                         self.push(": ");
                         self.line_unicode(v, current_indent, cont_prefix.clone());
-                        self.pusheen();
-                        // TODO: children
+                        if is_not_last_line {
+                            self.pusheen();
+                        }
                     }
+                    // TODO: children
                 }
             }
         }
