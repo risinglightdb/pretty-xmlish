@@ -70,26 +70,19 @@ impl PrettyConfig {
     }
 }
 
-fn append_str(mut base: Str, action: impl FnOnce(&mut String)) -> Str {
-    let x = base.to_mut();
-    action(x);
-    base
-}
-
-fn append_prefix(base: Str, indent: usize, start: char, fill: char) -> Str {
-    append_str(base, |editor| {
-        let mut remaining = indent;
-        if remaining > 1 {
-            editor.push(start);
-            remaining -= 1;
-        }
-        editor.extend(repeat(fill).take(remaining - 1));
-        editor.push(' ');
-    })
+fn append_prefix(mut editor: String, indent: usize, start: char, fill: char) -> String {
+    let mut remaining = indent;
+    if remaining > 1 {
+        editor.push(start);
+        remaining -= 1;
+    }
+    editor.extend(repeat(fill).take(remaining - 1));
+    editor.push(' ');
+    editor
 }
 
 impl<'a> LinedBuffer<'a> {
-    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, current_indent: usize, prefix: Str) {
+    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, current_indent: usize, prefix: String) {
         use Pretty::*;
         let current_indent = current_indent + 1;
         let indent_len = current_indent * self.config.indent;
