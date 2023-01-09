@@ -122,10 +122,12 @@ impl<'a> LinedBuffer<'a> {
                         };
                         self.push(&fields_prefix);
                         self.line_unicode(p, current_indent, cont_prefix.clone());
-                        self.pusheen();
+                        if is_not_last_line {
+                            self.pusheen();
+                        }
                     }
-                    self.begin_line();
-                    self.push(&prefix);
+                    // self.begin_line();
+                    // self.push(&prefix);
                     // self.push("]");
                 }
                 Record(xml) => {
