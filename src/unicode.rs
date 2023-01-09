@@ -1,6 +1,6 @@
 use std::iter::repeat;
 
-use crate::{LinedBuffer, Pretty, PrettyConfig, Str};
+use crate::{LinedBuffer, Pretty, PrettyConfig};
 
 /// https://www.w3.org/TR/xml-entity-names/025.html
 /// These unicode characters are assumed to have length 1!
@@ -70,7 +70,8 @@ impl PrettyConfig {
     }
 }
 
-fn append_prefix(mut editor: String, indent: usize, start: char, fill: char) -> String {
+fn append_prefix(editor: &str, indent: usize, start: char, fill: char) -> String {
+    let mut editor = editor.to_string();
     let mut remaining = indent;
     if remaining > 1 {
         editor.push(start);
@@ -82,7 +83,7 @@ fn append_prefix(mut editor: String, indent: usize, start: char, fill: char) -> 
 }
 
 impl<'a> LinedBuffer<'a> {
-    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, current_indent: usize, prefix: String) {
+    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, current_indent: usize, prefix: &str) {
         use Pretty::*;
         let current_indent = current_indent + 1;
         let indent_len = current_indent * self.config.indent;
@@ -98,18 +99,18 @@ impl<'a> LinedBuffer<'a> {
             }
             use characters::*;
             let idt = self.config.indent;
-            let cont_prefix = append_prefix(prefix.clone(), idt, UD, ' ');
-            let last_cont_prefix = append_prefix(prefix.clone(), idt, ' ', ' ');
-            let fields_prefix = append_prefix(prefix.clone(), idt, URD, LR);
-            let last_field_prefix = append_prefix(prefix.clone(), idt, UR, LR);
+            let cont_prefix = append_prefix(prefix, idt, UD, ' ');
+            let last_cont_prefix = append_prefix(prefix, idt, ' ', ' ');
+            let fields_prefix = append_prefix(prefix, idt, URD, LR);
+            let last_field_prefix = append_prefix(prefix, idt, UR, LR);
             match pretty {
                 Text(_) => unreachable!(),
                 Array(list) => {
                     use characters::*;
-                    let fst_field_prefix = append_prefix(prefix.clone(), idt, DR, LR);
+                    let fst_field_prefix = append_prefix(prefix, idt, DR, LR);
                     // self.push("[");
                     self.pusheen();
-                    // let el_prefix = append_prefix(prefix.clone(), self.config.indent, ' ', ' ');
+                    // let el_prefix = append_prefix(prefix, self.config.indent, ' ', ' ');
                     for (i, p) in list.iter().enumerate() {
                         self.begin_line();
                         let is_not_last_line = i < list.len() - 1;
@@ -121,7 +122,7 @@ impl<'a> LinedBuffer<'a> {
                             (&last_cont_prefix, &last_field_prefix)
                         };
                         self.push(&fields_prefix);
-                        self.line_unicode(p, current_indent, cont_prefix.clone());
+                        self.line_unicode(p, current_indent, &cont_prefix);
                         if is_not_last_line {
                             self.pusheen();
                         }
@@ -144,7 +145,7 @@ impl<'a> LinedBuffer<'a> {
                         self.push(&fields_prefix);
                         self.push(k);
                         self.push(": ");
-                        self.line_unicode(v, current_indent, cont_prefix.clone());
+                        self.line_unicode(v, current_indent, &cont_prefix);
                         if is_not_last_line {
                             self.pusheen();
                         }
