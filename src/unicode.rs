@@ -92,31 +92,45 @@ impl<'a> LinedBuffer<'a> {
             pretty.ol_build_str_ascii(self.out);
             self.already_occupied += ol_len;
         } else {
+            if let Text(s) = pretty {
+                self.push(s);
+                return;
+            }
+            use characters::*;
+            let idt = self.config.indent;
+            let cont_prefix = append_prefix(prefix.clone(), idt, UD, ' ');
+            let last_cont_prefix = append_prefix(prefix.clone(), idt, ' ', ' ');
+            let fields_prefix = append_prefix(prefix.clone(), idt, URD, LR);
+            let last_field_prefix = append_prefix(prefix.clone(), idt, UR, LR);
             match pretty {
-                Text(s) => self.push(s),
+                Text(_) => unreachable!(),
                 Array(list) => {
-                    self.push("[");
+                    use characters::*;
+                    let fst_field_prefix = append_prefix(prefix.clone(), idt, DR, LR);
+                    // self.push("[");
                     self.pusheen();
-                    let el_prefix = append_prefix(prefix.clone(), self.config.indent, ' ', ' ');
-                    for p in list {
+                    // let el_prefix = append_prefix(prefix.clone(), self.config.indent, ' ', ' ');
+                    for (i, p) in list.iter().enumerate() {
                         self.begin_line();
-                        self.push(&el_prefix);
-                        self.line_unicode(p, current_indent, el_prefix.clone());
+                        let is_not_last_line = i < list.len() - 1;
+                        let (cont_prefix, fields_prefix) = if i == 0 {
+                            (&cont_prefix, &fst_field_prefix)
+                        } else if is_not_last_line {
+                            (&cont_prefix, &fields_prefix)
+                        } else {
+                            (&last_cont_prefix, &last_field_prefix)
+                        };
+                        self.push(&fields_prefix);
+                        self.line_unicode(p, current_indent, cont_prefix.clone());
                         self.pusheen();
                     }
                     self.begin_line();
                     self.push(&prefix);
-                    self.push("]");
+                    // self.push("]");
                 }
                 Record(xml) => {
-                    use characters::*;
                     self.push(&xml.name);
                     self.pusheen();
-                    let idt = self.config.indent;
-                    let cont_prefix = append_prefix(prefix.clone(), idt, UD, ' ');
-                    let last_cont_prefix = append_prefix(prefix.clone(), idt, ' ', ' ');
-                    let fields_prefix = append_prefix(prefix.clone(), idt, URD, LR);
-                    let last_field_prefix = append_prefix(prefix, idt, UR, LR);
                     for (i, (k, v)) in xml.fields.iter().enumerate() {
                         self.begin_line();
                         let is_not_last_line = i < xml.fields.len() - 1;
