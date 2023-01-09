@@ -50,9 +50,9 @@ impl PrettyConfig {
                 Text(s) => s.chars().count() + first_line_base,
                 Array(list) => list
                     .iter()
-                    .map(|p| self.interesting_ascii(next_indent, p, 0) + ",".len())
+                    .map(|p| self.interesting_ascii(next_indent, p, 0))
                     .max()
-                    .unwrap_or(first_line_base + "[".len()),
+                    .unwrap_or(first_line_base),
                 Record(xml) => {
                     let header = xml.name.chars().count() + first_line_base;
                     let fields = (xml.fields.iter()).map(|(k, v)| {
