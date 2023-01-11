@@ -24,6 +24,12 @@ pub struct XmlNode<'a> {
     pub children: Vec<Pretty<'a>>,
 }
 
+impl<'a> XmlNode<'a> {
+    pub fn has_children(&self) -> bool {
+        !self.children.is_empty()
+    }
+}
+
 /// Use `into`!!
 #[derive(Clone)]
 pub enum Pretty<'a> {
@@ -60,7 +66,7 @@ impl<'a> Pretty<'a> {
 
     pub fn has_children(&self) -> bool {
         match self {
-            Pretty::Record(xml) => !xml.children.is_empty(),
+            Pretty::Record(xml) => xml.has_children(),
             _ => false,
         }
     }
@@ -176,7 +182,7 @@ impl<'a> LinedBuffer<'a> {
     fn pusheen(&mut self) {
         if self.width < self.already_occupied {
             println!(
-                "width: {}, already_occupied: {}",
+                "Bug!! w: {}, ao: {}",
                 self.width, self.already_occupied
             );
             self.push(" |\n");
