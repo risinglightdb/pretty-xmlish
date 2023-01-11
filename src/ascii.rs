@@ -3,7 +3,7 @@ use crate::{LinedBuffer, Pretty, PrettyConfig, XmlNode};
 impl PrettyConfig {
     pub fn ascii(&self, out: &mut String, pretty: &Pretty) {
         let boundaries = "| ".len() + " |".len();
-        let width = self.interesting_ascii(0, pretty, 0);
+        let width = self.interesting_ascii(0, pretty, 0, 0);
         let total_len = width + boundaries;
         let mut dat = LinedBuffer {
             out,
@@ -21,14 +21,14 @@ impl PrettyConfig {
         Self::horizon(dat.out, total_len);
     }
 
-    /// Parameter 'additional' is added to the first line **only**.
     pub(crate) fn interesting_ascii(
         &self,
         base_indent: usize,
         pretty: &Pretty,
-        additional: usize,
+        start_add: usize,
+        end_add: usize,
     ) -> usize {
-        let first_line_base = base_indent + additional;
+        let first_line_base = base_indent + start_add + end_add;
         let len = pretty.ol_len() + first_line_base;
         if !pretty.has_children() && len <= self.width {
             len
@@ -39,9 +39,9 @@ impl PrettyConfig {
                 Text(s) => s.chars().count() + first_line_base,
                 Array(v) => v
                     .iter()
-                    .map(|p| self.interesting_ascii(next_indent, p, 0) + ",".len())
+                    .map(|p| self.interesting_ascii(next_indent, p, 0, ",".len()))
                     .max()
-                    .unwrap_or(first_line_base + "[]".len()),
+                    .unwrap_or(first_line_base + "[]".len() + end_add),
                 Record(xml) => {
                     let header = xml.name.chars().count() + first_line_base + " {".len();
                     let children = (xml.children.iter().enumerate()).map(|(i, p)| {
@@ -50,13 +50,19 @@ impl PrettyConfig {
                         } else {
                             0
                         };
-                        self.interesting_ascii(next_indent, p, 0) + at_the_end
+                        self.interesting_ascii(next_indent, p, 0, at_the_end)
                     });
-                    (xml.fields.iter())
-                        .map(|(k, v)| {
-                            self.interesting_ascii(next_indent, v, k.chars().count() + ": ".len())
+                    (xml.fields.iter().enumerate())
+                        .map(|(i, (k, v))| {
+                            let end = if i < xml.fields.len() - 1 {
+                                ",".len()
+                            } else {
+                                0
+                            };
+                            let start = k.chars().count() + ": ".len();
+                            self.interesting_ascii(next_indent, v, start, end)
                         })
-                        .chain(Some(header).into_iter())
+                        .chain(vec![header, "}".len() + end_add].into_iter())
                         .chain(children)
                         .max()
                         .unwrap()

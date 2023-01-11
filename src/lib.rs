@@ -180,16 +180,16 @@ impl<'a> LinedBuffer<'a> {
         self.push(" ".repeat(amount).as_str());
     }
     fn pusheen(&mut self) {
-        if self.width < self.already_occupied {
-            println!(
-                "Bug!! w: {}, ao: {}",
-                self.width, self.already_occupied
-            );
-            self.push(" |\n");
-        } else {
-            self.pip(self.width - self.already_occupied);
-            self.push(" |\n");
-        }
+        // if self.width < self.already_occupied {
+        //     println!(
+        //         "Bug!! w: {}, ao: {}",
+        //         self.width, self.already_occupied
+        //     );
+        //     self.push(" |\n");
+        // } else {
+        self.pip(self.width - self.already_occupied);
+        self.push(" |\n");
+        // }
         self.already_occupied = 0;
     }
 }

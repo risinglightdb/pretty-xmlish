@@ -56,7 +56,7 @@ fn main() {
     );
     let mut out = String::new();
     config.unicode(&mut out, &pretty);
-    out.push('\n');
-    config.ascii(&mut out, &pretty);
+    // out.push('\n');
+    // config.ascii(&mut out, &pretty);
     println!("{}", out);
 }

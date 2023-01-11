@@ -50,12 +50,12 @@ impl PrettyConfig {
                 Text(s) => s.chars().count() + first_line_base,
                 Array(list) => list
                     .iter()
-                    .map(|p| self.interesting_ascii(next_indent, p, 0))
+                    .map(|p| self.interesting_unicode(next_indent, p, 0))
                     .max()
                     .unwrap_or(first_line_base + "[]".len()),
                 Record(xml) => {
                     let header = xml.name.chars().count() + first_line_base;
-                    let fields = (xml.fields.iter()).map(|(k, v)| {
+                    let fields = xml.fields.iter().map(|(k, v)| {
                         self.interesting_unicode(next_indent, v, k.chars().count() + ": ".len())
                     });
                     (xml.children.iter())
@@ -83,10 +83,9 @@ fn append_prefix(editor: &str, indent: usize, start: char, fill: char) -> String
 }
 
 impl<'a> LinedBuffer<'a> {
-    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, current_indent: usize, prefix: &str) {
+    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, indent_len: usize, prefix: &str) {
         use Pretty::*;
-        let current_indent = current_indent + 1;
-        let indent_len = current_indent * self.config.indent;
+        let indent_len = indent_len + self.config.indent;
 
         let ol_len = pretty.ol_len();
         if !pretty.has_children() && ol_len + indent_len < self.width {
@@ -137,13 +136,13 @@ impl<'a> LinedBuffer<'a> {
                             choose(is_not_last_line)
                         };
                         self.push(&fields_prefix);
-                        self.line_unicode(p, current_indent, &cont_prefix);
+                        self.line_unicode(p, indent_len, &cont_prefix);
                         if is_not_last_line {
                             self.pusheen();
                         }
                     }
                 }
-                DeMorgan(xml) => self.line_unicode_xml(xml, choose, current_indent),
+                DeMorgan(xml) => self.line_unicode_xml(xml, choose, indent_len),
             }
         }
     }
@@ -152,7 +151,7 @@ impl<'a> LinedBuffer<'a> {
         &mut self,
         xml: &XmlNode,
         choose: impl Fn(bool) -> (&'b String, &'b String),
-        current_indent: usize,
+        indent_len: usize,
     ) {
         self.push(&xml.name);
         self.pusheen();
@@ -164,7 +163,7 @@ impl<'a> LinedBuffer<'a> {
             self.push(&fields_prefix);
             self.push(k);
             self.push(": ");
-            self.line_unicode(v, current_indent + k.len() + ": ".len(), &cont_prefix);
+            self.line_unicode(v, indent_len + k.len() + ": ".len(), &cont_prefix);
             if is_not_last_line {
                 self.pusheen();
             }
@@ -174,7 +173,7 @@ impl<'a> LinedBuffer<'a> {
             let is_not_last_line = i < xml.children.len() - 1;
             let (cont_prefix, fields_prefix) = choose(is_not_last_line);
             self.push(&fields_prefix);
-            self.line_unicode(child, current_indent, &cont_prefix);
+            self.line_unicode(child, indent_len, &cont_prefix);
             if is_not_last_line {
                 self.pusheen();
             }
