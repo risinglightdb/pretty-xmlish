@@ -1,6 +1,6 @@
 use std::iter::repeat;
 
-use crate::{LinedBuffer, Pretty, PrettyConfig};
+use crate::{LinedBuffer, Pretty, PrettyConfig, XmlNode};
 
 /// https://www.w3.org/TR/xml-entity-names/025.html
 /// These unicode characters are assumed to have length 1!
@@ -93,19 +93,27 @@ impl<'a> LinedBuffer<'a> {
             pretty.ol_build_str_ascii(self.out);
             self.already_occupied += ol_len;
         } else {
-            if let Text(s) = pretty {
-                self.push(s);
-                return;
+            enum Cubical<'a> {
+                Cartesian(&'a [Pretty<'a>]),
+                DeMorgan(&'a XmlNode<'a>),
             }
+            use Cubical::*;
+            let regularity = match pretty {
+                Text(s) => {
+                    self.push(s);
+                    return;
+                }
+                Record(xml) => DeMorgan(xml),
+                Array(list) => Cartesian(list),
+            };
             use characters::*;
             let idt = self.config.indent;
             let cont_prefix = append_prefix(prefix, idt, UD, ' ');
             let last_cont_prefix = append_prefix(prefix, idt, ' ', ' ');
             let fields_prefix = append_prefix(prefix, idt, URD, LR);
             let last_field_prefix = append_prefix(prefix, idt, UR, LR);
-            match pretty {
-                Text(_) => unreachable!(),
-                Array(list) => {
+            match regularity {
+                Cartesian(list) => {
                     use characters::*;
                     let fst_field_prefix = append_prefix(prefix, idt, DR, LR);
                     self.pusheen();
@@ -126,7 +134,7 @@ impl<'a> LinedBuffer<'a> {
                         }
                     }
                 }
-                Record(xml) => {
+                DeMorgan(xml) => {
                     self.push(&xml.name);
                     self.pusheen();
                     let has_children = !xml.children.is_empty();
