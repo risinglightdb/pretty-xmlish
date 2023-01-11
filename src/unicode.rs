@@ -147,6 +147,12 @@ impl<'a> LinedBuffer<'a> {
                     self.push(&xml.name);
                     self.pusheen();
                     let has_children = !xml.children.is_empty();
+                    println!(
+                        "len: {}/{}, data: {}",
+                        ol_len,
+                        self.width,
+                        pretty.ol_to_string()
+                    );
 
                     for (i, (k, v)) in xml.fields.iter().enumerate() {
                         self.begin_line();
@@ -157,12 +163,6 @@ impl<'a> LinedBuffer<'a> {
                         self.push(": ");
                         self.line_unicode(v, current_indent, &cont_prefix);
                         if is_not_last_line {
-                            println!(
-                                "len: {}/{}, data: {}",
-                                ol_len,
-                                self.width,
-                                pretty.ol_to_string()
-                            );
                             self.pusheen();
                         }
                     }
