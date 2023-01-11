@@ -25,14 +25,14 @@ fn main() {
             Pretty::simple_record(
                 "BatchExchange",
                 btreemap! {
-                    "order" => "[]".into(),
+                    "order" => Pretty::Array(vec![]),
                     "dist" => "Single".into(),
                 },
                 vec![Pretty::simple_record(
                     "BatchScan",
                     btreemap! {
                         "table" => "t1".into(),
-                        "columns" => "[v1, v2, v3]".into(),
+                        "columns" => Pretty::Array(vec!["v1".into(), "v2".into(), "v3".into()])
                     },
                     vec![],
                 )],
@@ -40,7 +40,7 @@ fn main() {
             Pretty::simple_record(
                 "BatchExchange",
                 btreemap! {
-                    "order" => "[]".into(),
+                    "order" => Pretty::Array(vec![]),
                     "dist" => "Single".into(),
                 },
                 vec![Pretty::simple_record(

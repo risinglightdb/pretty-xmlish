@@ -82,6 +82,10 @@ impl<'a> Pretty<'a> {
                 builder.push_str(" }");
             }
             Array(v) => {
+                if v.is_empty() {
+                    builder.push_str("[]");
+                    return;
+                }
                 builder.push_str("[ ");
                 for (i, e) in v.iter().enumerate() {
                     if i > 0 {
@@ -115,6 +119,9 @@ impl<'a> Pretty<'a> {
                 mem + mid + beg
             }
             Array(v) => {
+                if v.is_empty() {
+                    return "[]".len();
+                }
                 let mem: usize = v.iter().map(Self::ol_len).sum();
                 let mid = (v.len() - 1) * ", ".len();
                 let beg = "[ ".len() + " ]".len();

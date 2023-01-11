@@ -40,7 +40,7 @@ impl PrettyConfig {
                     .iter()
                     .map(|p| self.interesting_ascii(next_indent, p, 0) + ",".len())
                     .max()
-                    .unwrap_or(first_line_base + "[".len()),
+                    .unwrap_or(first_line_base + "[]".len()),
                 Record(xml) => {
                     let header = xml.name.chars().count() + first_line_base + " {".len();
                     let children =
@@ -75,6 +75,10 @@ impl<'a> LinedBuffer<'a> {
                 Text(s) => self.push(s),
                 Array(v) => {
                     self.push("[");
+                    if v.is_empty() {
+                        self.push("]");
+                        return;
+                    }
                     self.pusheen();
                     for (i, e) in v.iter().enumerate() {
                         self.begin_line();

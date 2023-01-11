@@ -52,7 +52,7 @@ impl PrettyConfig {
                     .iter()
                     .map(|p| self.interesting_ascii(next_indent, p, 0))
                     .max()
-                    .unwrap_or(first_line_base),
+                    .unwrap_or(first_line_base + "[]".len()),
                 Record(xml) => {
                     let header = xml.name.chars().count() + first_line_base;
                     let fields = (xml.fields.iter()).map(|(k, v)| {
@@ -112,8 +112,19 @@ impl<'a> LinedBuffer<'a> {
             let last_cont_prefix = append_prefix(prefix, idt, ' ', ' ');
             let fields_prefix = append_prefix(prefix, idt, URD, LR);
             let last_field_prefix = append_prefix(prefix, idt, UR, LR);
+            let choose = |is_not_last_line: bool| {
+                if is_not_last_line {
+                    (&cont_prefix, &fields_prefix)
+                } else {
+                    (&last_cont_prefix, &last_field_prefix)
+                }
+            };
             match regularity {
                 Cartesian(list) => {
+                    if list.is_empty() {
+                        self.push("[]");
+                        return;
+                    }
                     use characters::*;
                     let fst_field_prefix = append_prefix(prefix, idt, DR, LR);
                     self.pusheen();
@@ -122,10 +133,8 @@ impl<'a> LinedBuffer<'a> {
                         let is_not_last_line = i < list.len() - 1;
                         let (cont_prefix, fields_prefix) = if i == 0 {
                             (&cont_prefix, &fst_field_prefix)
-                        } else if is_not_last_line {
-                            (&cont_prefix, &fields_prefix)
                         } else {
-                            (&last_cont_prefix, &last_field_prefix)
+                            choose(is_not_last_line)
                         };
                         self.push(&fields_prefix);
                         self.line_unicode(p, current_indent, &cont_prefix);
@@ -138,13 +147,7 @@ impl<'a> LinedBuffer<'a> {
                     self.push(&xml.name);
                     self.pusheen();
                     let has_children = !xml.children.is_empty();
-                    let choose = |is_not_last_line: bool| {
-                        if is_not_last_line {
-                            (&cont_prefix, &fields_prefix)
-                        } else {
-                            (&last_cont_prefix, &last_field_prefix)
-                        }
-                    };
+
                     for (i, (k, v)) in xml.fields.iter().enumerate() {
                         self.begin_line();
                         let is_not_last_line = has_children || i < xml.fields.len() - 1;
