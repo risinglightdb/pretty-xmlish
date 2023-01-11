@@ -127,7 +127,7 @@ impl<'a> Pretty<'a> {
                 }
                 let mem: usize = v.iter().map(Self::ol_len).sum();
                 let mid = (v.len() - 1) * ", ".len();
-                let beg = "[ ".len() + " ]".len();
+                let beg = "[  ]".len();
                 mem + mid + beg
             }
         }
@@ -179,10 +179,11 @@ impl<'a> LinedBuffer<'a> {
                 "width: {}, already_occupied: {}",
                 self.width, self.already_occupied
             );
-            panic!("already_occupied > width");
+            self.push(" |\n");
+        } else {
+            self.pip(self.width - self.already_occupied);
+            self.push(" |\n");
         }
-        self.pip(self.width - self.already_occupied);
-        self.push(" |\n");
         self.already_occupied = 0;
     }
 }

@@ -143,40 +143,48 @@ impl<'a> LinedBuffer<'a> {
                         }
                     }
                 }
-                DeMorgan(xml) => {
-                    self.push(&xml.name);
-                    self.pusheen();
-                    let has_children = !xml.children.is_empty();
-                    println!(
-                        "len: {}/{}, data: {}",
-                        ol_len,
-                        self.width,
-                        pretty.ol_to_string()
-                    );
+                DeMorgan(xml) => self.line_unicode_xml(xml, ol_len, pretty, choose, current_indent),
+            }
+        }
+    }
 
-                    for (i, (k, v)) in xml.fields.iter().enumerate() {
-                        self.begin_line();
-                        let is_not_last_line = has_children || i < xml.fields.len() - 1;
-                        let (cont_prefix, fields_prefix) = choose(is_not_last_line);
-                        self.push(&fields_prefix);
-                        self.push(k);
-                        self.push(": ");
-                        self.line_unicode(v, current_indent, &cont_prefix);
-                        if is_not_last_line {
-                            self.pusheen();
-                        }
-                    }
-                    for (i, child) in xml.children.iter().enumerate() {
-                        self.begin_line();
-                        let is_not_last_line = i < xml.children.len() - 1;
-                        let (cont_prefix, fields_prefix) = choose(is_not_last_line);
-                        self.push(&fields_prefix);
-                        self.line_unicode(child, current_indent, &cont_prefix);
-                        if is_not_last_line {
-                            self.pusheen();
-                        }
-                    }
-                }
+    fn line_unicode_xml<'b>(
+        &mut self,
+        xml: &XmlNode,
+        ol_len: usize,
+        pretty: &Pretty,
+        choose: impl Fn(bool) -> (&'b String, &'b String),
+        current_indent: usize,
+    ) {
+        self.push(&xml.name);
+        self.pusheen();
+        let has_children = !xml.children.is_empty();
+        println!(
+            "len: {}/{}, data: {}",
+            ol_len,
+            self.width,
+            pretty.ol_to_string()
+        );
+        for (i, (k, v)) in xml.fields.iter().enumerate() {
+            self.begin_line();
+            let is_not_last_line = has_children || i < xml.fields.len() - 1;
+            let (cont_prefix, fields_prefix) = choose(is_not_last_line);
+            self.push(&fields_prefix);
+            self.push(k);
+            self.push(": ");
+            self.line_unicode(v, current_indent, &cont_prefix);
+            if is_not_last_line {
+                self.pusheen();
+            }
+        }
+        for (i, child) in xml.children.iter().enumerate() {
+            self.begin_line();
+            let is_not_last_line = i < xml.children.len() - 1;
+            let (cont_prefix, fields_prefix) = choose(is_not_last_line);
+            self.push(&fields_prefix);
+            self.line_unicode(child, current_indent, &cont_prefix);
+            if is_not_last_line {
+                self.pusheen();
             }
         }
     }
