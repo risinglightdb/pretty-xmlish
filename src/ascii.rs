@@ -67,11 +67,9 @@ impl PrettyConfig {
 }
 
 impl<'a> LinedBuffer<'a> {
-    pub(crate) fn line_ascii(&mut self, pretty: &Pretty, indent: usize) {
+    pub(crate) fn line_ascii(&mut self, pretty: &Pretty, self_indent_len: usize) {
         use Pretty::*;
-        let self_indent_len = indent * self.config.indent;
-        let indent = indent + 1;
-        let indent_len = indent * self.config.indent;
+        let indent_len = self_indent_len + self.config.indent;
 
         let ol_len = pretty.ol_len();
         if !pretty.has_children() && ol_len + indent_len < self.width {
@@ -90,7 +88,7 @@ impl<'a> LinedBuffer<'a> {
                     for (i, e) in v.iter().enumerate() {
                         self.begin_line();
                         self.pip(indent_len);
-                        self.line_ascii(e, indent);
+                        self.line_ascii(e, indent_len);
                         if i < v.len() - 1 {
                             self.push(",");
                         }
@@ -100,18 +98,12 @@ impl<'a> LinedBuffer<'a> {
                     self.pip(self_indent_len);
                     self.push("]");
                 }
-                Record(xml) => self.line_ascii_xml(xml, indent_len, indent, self_indent_len),
+                Record(xml) => self.line_ascii_xml(xml, indent_len, self_indent_len),
             }
         }
     }
 
-    fn line_ascii_xml(
-        &mut self,
-        xml: &XmlNode,
-        indent_len: usize,
-        indent: usize,
-        self_indent_len: usize,
-    ) {
+    fn line_ascii_xml(&mut self, xml: &XmlNode, indent_len: usize, self_indent_len: usize) {
         self.push(&xml.name);
         self.push(" {");
         self.pusheen();
@@ -120,7 +112,7 @@ impl<'a> LinedBuffer<'a> {
             self.pip(indent_len);
             self.push(k);
             self.push(": ");
-            self.line_ascii(v, indent);
+            self.line_ascii(v, indent_len);
             if i < xml.fields.len() - 1 {
                 self.push(",");
             }
@@ -133,7 +125,7 @@ impl<'a> LinedBuffer<'a> {
             self.pusheen();
             self.begin_line();
             self.pip(indent_len);
-            self.line_ascii(child, indent);
+            self.line_ascii(child, indent_len);
         }
     }
 }
