@@ -46,6 +46,9 @@ impl<'a> Pretty<'a> {
             children,
         })
     }
+    pub fn list_of_strings(list: &'a [&'a str]) -> Self {
+        Self::Array(list.iter().map(|&s| s.into()).collect())
+    }
 
     pub fn display(display: &impl Display) -> Self {
         display.to_string().into()
@@ -171,6 +174,13 @@ impl<'a> LinedBuffer<'a> {
         self.push(" ".repeat(amount).as_str());
     }
     fn pusheen(&mut self) {
+        if self.width < self.already_occupied {
+            println!(
+                "width: {}, already_occupied: {}",
+                self.width, self.already_occupied
+            );
+            panic!("already_occupied > width");
+        }
         self.pip(self.width - self.already_occupied);
         self.push(" |\n");
         self.already_occupied = 0;

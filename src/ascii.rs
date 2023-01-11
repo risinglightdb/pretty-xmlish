@@ -29,7 +29,7 @@ impl PrettyConfig {
     ) -> usize {
         let first_line_base = base_indent + additional;
         let len = pretty.ol_len() + first_line_base;
-        if len <= self.width {
+        if !pretty.has_children() && len <= self.width {
             len
         } else {
             let next_indent = base_indent + self.indent;
@@ -67,7 +67,7 @@ impl<'a> LinedBuffer<'a> {
         let indent_len = indent * self.config.indent;
 
         let ol_len = pretty.ol_len();
-        if ol_len + indent_len <= self.width {
+        if !pretty.has_children() && ol_len + indent_len < self.width {
             pretty.ol_build_str_ascii(self.out);
             self.already_occupied += ol_len;
         } else {
@@ -114,6 +114,7 @@ impl<'a> LinedBuffer<'a> {
                     for child in xml.children.iter() {
                         self.pusheen();
                         self.begin_line();
+                        self.pip(indent_len);
                         self.line_ascii(child, indent);
                     }
                 }

@@ -32,7 +32,7 @@ fn main() {
                     "BatchScan",
                     btreemap! {
                         "table" => "t1".into(),
-                        "columns" => Pretty::Array(vec!["v1".into(), "v2".into(), "v3".into()])
+                        "columns" => Pretty::list_of_strings(&["v1", "v2", "v3"])
                     },
                     vec![],
                 )],
@@ -47,7 +47,7 @@ fn main() {
                     "BatchScan",
                     btreemap! {
                         "table" => "t2".into(),
-                        "columns" => "[v1, v2, v3]".into(),
+                        "columns" => Pretty::list_of_strings(&["v1", "v2", "v3"]),
                     },
                     vec![],
                 )],

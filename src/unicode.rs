@@ -41,7 +41,7 @@ impl PrettyConfig {
     ) -> usize {
         let first_line_base = base_indent + additional;
         let len = pretty.ol_len() + first_line_base;
-        if len <= self.width {
+        if !pretty.has_children() && len <= self.width {
             len
         } else {
             let next_indent = base_indent + self.indent;
@@ -89,7 +89,7 @@ impl<'a> LinedBuffer<'a> {
         let indent_len = current_indent * self.config.indent;
 
         let ol_len = pretty.ol_len();
-        if !pretty.has_children() && ol_len + indent_len <= self.width {
+        if !pretty.has_children() && ol_len + indent_len < self.width {
             pretty.ol_build_str_ascii(self.out);
             self.already_occupied += ol_len;
         } else {
@@ -157,6 +157,12 @@ impl<'a> LinedBuffer<'a> {
                         self.push(": ");
                         self.line_unicode(v, current_indent, &cont_prefix);
                         if is_not_last_line {
+                            println!(
+                                "len: {}/{}, data: {}",
+                                ol_len,
+                                self.width,
+                                pretty.ol_to_string()
+                            );
                             self.pusheen();
                         }
                     }
