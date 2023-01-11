@@ -89,7 +89,7 @@ impl<'a> LinedBuffer<'a> {
         let indent_len = current_indent * self.config.indent;
 
         let ol_len = pretty.ol_len();
-        if ol_len + indent_len <= self.width {
+        if !pretty.has_children() && ol_len + indent_len <= self.width {
             pretty.ol_build_str_ascii(self.out);
             self.already_occupied += ol_len;
         } else {
@@ -108,9 +108,7 @@ impl<'a> LinedBuffer<'a> {
                 Array(list) => {
                     use characters::*;
                     let fst_field_prefix = append_prefix(prefix, idt, DR, LR);
-                    // self.push("[");
                     self.pusheen();
-                    // let el_prefix = append_prefix(prefix, self.config.indent, ' ', ' ');
                     for (i, p) in list.iter().enumerate() {
                         self.begin_line();
                         let is_not_last_line = i < list.len() - 1;
@@ -127,21 +125,22 @@ impl<'a> LinedBuffer<'a> {
                             self.pusheen();
                         }
                     }
-                    // self.begin_line();
-                    // self.push(&prefix);
-                    // self.push("]");
                 }
                 Record(xml) => {
                     self.push(&xml.name);
                     self.pusheen();
-                    for (i, (k, v)) in xml.fields.iter().enumerate() {
-                        self.begin_line();
-                        let is_not_last_line = i < xml.fields.len() - 1;
-                        let (cont_prefix, fields_prefix) = if is_not_last_line {
+                    let has_children = !xml.children.is_empty();
+                    let choose = |is_not_last_line: bool| {
+                        if is_not_last_line {
                             (&cont_prefix, &fields_prefix)
                         } else {
                             (&last_cont_prefix, &last_field_prefix)
-                        };
+                        }
+                    };
+                    for (i, (k, v)) in xml.fields.iter().enumerate() {
+                        self.begin_line();
+                        let is_not_last_line = has_children || i < xml.fields.len() - 1;
+                        let (cont_prefix, fields_prefix) = choose(is_not_last_line);
                         self.push(&fields_prefix);
                         self.push(k);
                         self.push(": ");
@@ -150,7 +149,16 @@ impl<'a> LinedBuffer<'a> {
                             self.pusheen();
                         }
                     }
-                    // TODO: children
+                    for (i, child) in xml.children.iter().enumerate() {
+                        self.begin_line();
+                        let is_not_last_line = i < xml.children.len() - 1;
+                        let (cont_prefix, fields_prefix) = choose(is_not_last_line);
+                        self.push(&fields_prefix);
+                        self.line_unicode(child, current_indent, &cont_prefix);
+                        if is_not_last_line {
+                            self.pusheen();
+                        }
+                    }
                 }
             }
         }

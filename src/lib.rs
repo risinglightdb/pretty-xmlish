@@ -41,6 +41,13 @@ impl<'a> Pretty<'a> {
         format!("{:?}", debug).into()
     }
 
+    pub fn has_children(&self) -> bool {
+        match self {
+            Pretty::Record(xml) => !xml.children.is_empty(),
+            _ => false,
+        }
+    }
+
     /// Potential improvements: instead of using a mutable String,
     /// use a Write trait with monadic error reporting.
     pub(crate) fn ol_build_str_ascii(&self, builder: &mut String) {
