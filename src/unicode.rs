@@ -143,7 +143,7 @@ impl<'a> LinedBuffer<'a> {
                         }
                     }
                 }
-                DeMorgan(xml) => self.line_unicode_xml(xml, ol_len, pretty, choose, current_indent),
+                DeMorgan(xml) => self.line_unicode_xml(xml, choose, current_indent),
             }
         }
     }
@@ -151,20 +151,12 @@ impl<'a> LinedBuffer<'a> {
     fn line_unicode_xml<'b>(
         &mut self,
         xml: &XmlNode,
-        ol_len: usize,
-        pretty: &Pretty,
         choose: impl Fn(bool) -> (&'b String, &'b String),
         current_indent: usize,
     ) {
         self.push(&xml.name);
         self.pusheen();
         let has_children = xml.has_children();
-        println!(
-            "len: {}/{}, data: {}",
-            ol_len,
-            self.width,
-            pretty.ol_to_string()
-        );
         for (i, (k, v)) in xml.fields.iter().enumerate() {
             self.begin_line();
             let is_not_last_line = has_children || i < xml.fields.len() - 1;
