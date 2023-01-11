@@ -48,11 +48,15 @@ which inspired me to write this RFC.
   based on the preferred width.
   + If everything can be done in one line, the actual width is the line's width, and the output will be one-linear.
   + If the output cannot be done in one line, the output will try to break down the output into multiple lines, and retry to fit the output into the preferred width for every line.
-+ The API supports wrapping the output with beautiful ASCII art.
++ The API supports wrapping the output with beautiful ASCII/Unicode art.
 
-## Types
+## Implementation
 
-### Types `XmlNode` and `Pretty` for pretty printing data
+These contents are subject to future changes.
+
+### Types
+
+#### Types `XmlNode` and `Pretty` for pretty printing data
 
 + These enums are inductive-inductively defined which represents an object that can be displayed as a string.
 + The width and height of the pretty-printed string can be calculated in advance.
@@ -68,17 +72,17 @@ Variants of `Pretty`:
 + Variant `Text` that pretty-prints a string.
   + It contains a copy-on-write string.
 
-### Record `PrettyConfig` for pretty printing configuration
+#### Record `PrettyConfig` for pretty printing configuration
 
 It contains indentation, preferred width, etc.
 
-### Record `LinedBuffer` for actually writing the string
+#### Record `LinedBuffer` for actually writing the string
 
 It contains a mutable reference to a `String`, and a `PrettyConfig`.
 It understands the intended width (precomputed by `PrettyConfig::interesting_*`),
 and will try to fill an incomplete line with spaces when asked so.
 
-## Important methods
+### Important methods
 
 + `Pretty::ol_len_*(&self) -> usize`
   + Returns the length of the pretty-printed string, under a one-linear setting.
@@ -93,3 +97,9 @@ and will try to fill an incomplete line with spaces when asked so.
   + Generates a line of a given length with `+` at the ends and `-` in the middle.
 + `PrettyConfig::ascii`
   + Calls `interesting` to predict the output width, and then generate the beautiful output, using pure ASCII style.
++ `PrettyConfig::unicode`
+  + Calls `interesting` to predict the output width, and then generate the beautiful output, using Unicode table-making characters.
+
+### Edge cases
+
++ All methods handle empty lists and no-children records. No-field records are not tested yet.
