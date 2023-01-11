@@ -9,38 +9,51 @@ fn main() {
             config.width = n;
         }
     }
-    let pretty = Pretty::Array(vec!["Lorem ipsum".into(), "2 < 1".into()]);
-    let songs = Pretty::Array(vec![
-        "Feel Good Inc.".into(),
-        "Smooth".into(),
-        "Ch-ch-ch-changes".into(),
-        "Human after all".into(),
-        "Sofia".into(),
-    ]);
-    let editors = Pretty::Array(vec![
-        "Emacs".into(),
-        "Vim".into(),
-        "Sublime Text".into(),
-        // https://www.w3.org/TR/xml-entity-names/025.html
-        "Atom\u{02514}".into(),
-    ]);
-    let xml = XmlNode {
-        name: "Info".into(),
-        fields: btreemap! {
-            "Songs".into() => songs,
-            "Editors".into() => editors,
+    // BatchNestedLoopJoin { type: Inner, predicate: ($0 = ($3 + $4)), output_indices: all }
+    //   BatchExchange { order: [], dist: Single }
+    //     BatchScan { table: t1, columns: [v1, v2, v3] }
+    //   BatchExchange { order: [], dist: Single }
+    //     BatchScan { table: t2, columns: [v1, v2, v3] }
+    let pretty = Pretty::simple_record(
+        "BatchNestedLoopJoin",
+        btreemap! {
+            "type" => "Inner".into(),
+            "predicate" => "($0 = ($3 + $4))".into(),
+            "output_indices" => "all".into(),
         },
-        children: Default::default(),
-    };
-    let xml = XmlNode {
-        name: "Outer info".into(),
-        fields: btreemap! {
-            "Demo field".into() => "233".into(),
-        },
-        children: vec![Pretty::Record(xml.clone()), Pretty::Record(xml)],
-    };
-    let pretty = Pretty::Array(vec![pretty.clone(), Pretty::Record(xml), pretty]);
-    let pretty = Pretty::Array(vec![pretty.clone(), pretty]);
+        vec![
+            Pretty::simple_record(
+                "BatchExchange",
+                btreemap! {
+                    "order" => "[]".into(),
+                    "dist" => "Single".into(),
+                },
+                vec![Pretty::simple_record(
+                    "BatchScan",
+                    btreemap! {
+                        "table" => "t1".into(),
+                        "columns" => "[v1, v2, v3]".into(),
+                    },
+                    vec![],
+                )],
+            ),
+            Pretty::simple_record(
+                "BatchExchange",
+                btreemap! {
+                    "order" => "[]".into(),
+                    "dist" => "Single".into(),
+                },
+                vec![Pretty::simple_record(
+                    "BatchScan",
+                    btreemap! {
+                        "table" => "t2".into(),
+                        "columns" => "[v1, v2, v3]".into(),
+                    },
+                    vec![],
+                )],
+            ),
+        ],
+    );
     let mut out = String::new();
     config.unicode(&mut out, &pretty);
     out.push('\n');

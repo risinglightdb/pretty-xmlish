@@ -33,6 +33,20 @@ pub enum Pretty<'a> {
 }
 
 impl<'a> Pretty<'a> {
+    pub fn simple_record(
+        name: &'a str,
+        fields: BTreeMap<&'a str, Self>,
+        children: Vec<Self>,
+    ) -> Self {
+        let name = name.into();
+        let fields = fields.into_iter().map(|(k, v)| (k.into(), v)).collect();
+        Self::Record(XmlNode {
+            name,
+            fields,
+            children,
+        })
+    }
+
     pub fn display(display: &impl Display) -> Self {
         display.to_string().into()
     }
