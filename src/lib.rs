@@ -19,22 +19,29 @@ pub use unicode::*;
 
 #[derive(Clone)]
 pub struct XmlNode<'a> {
-    pub name: Str<'a>,
-    pub fields: BTreeMap<Str<'a>, Pretty<'a>>,
-    pub children: Vec<Pretty<'a>>,
+    pub(crate) name: Str<'a>,
+    pub(crate) fields: BTreeMap<Str<'a>, Pretty<'a>>,
+    pub(crate) fields_is_linear: bool,
+    pub(crate) children: Vec<Pretty<'a>>,
 }
 
 impl<'a> XmlNode<'a> {
     pub fn has_children(&self) -> bool {
         !self.children.is_empty()
     }
-}
 
-pub(crate) struct XmlNode_<'a> {
-    pub name: &'a str,
-    pub fields: BTreeMap<&'a str, Pretty<'a>>,
-    pub fields_is_linear: bool,
-    pub children: &'a [Pretty<'a>],
+    pub fn new(
+        name: Str<'a>,
+        fields: BTreeMap<Str<'a>, Pretty<'a>>,
+        children: Vec<Pretty<'a>>,
+    ) -> Self {
+        Self {
+            name,
+            fields,
+            fields_is_linear: false,
+            children,
+        }
+    }
 }
 
 /// Use `into`!!
@@ -45,12 +52,6 @@ pub enum Pretty<'a> {
     Array(Vec<Self>),
 }
 
-pub(crate) enum Pretty_<'a> {
-    Text(&'a str),
-    Record(XmlNode_<'a>),
-    Array(&'a [Self]),
-}
-
 impl<'a> Pretty<'a> {
     pub fn simple_record(
         name: &'a str,
@@ -59,11 +60,7 @@ impl<'a> Pretty<'a> {
     ) -> Self {
         let name = name.into();
         let fields = fields.into_iter().map(|(k, v)| (k.into(), v)).collect();
-        Self::Record(XmlNode {
-            name,
-            fields,
-            children,
-        })
+        Self::Record(XmlNode::new(name, fields, children))
     }
     pub fn list_of_strings(list: &'a [&'a str]) -> Self {
         Self::Array(list.iter().map(|&s| s.into()).collect())
@@ -158,8 +155,8 @@ impl<'a, T: Into<Str<'a>>> From<T> for Pretty<'a> {
         Pretty::Text(s.into())
     }
 }
-
 #[derive(Clone)]
+
 pub struct PrettyConfig {
     pub indent: usize,
     /// Preferred width of the output, exlusive of the boundaries.

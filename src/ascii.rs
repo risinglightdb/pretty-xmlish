@@ -1,9 +1,11 @@
+use std::collections::BTreeMap;
+
 use crate::{LinedBuffer, Pretty, PrettyConfig, XmlNode};
 
 impl PrettyConfig {
     pub fn ascii(&self, out: &mut String, pretty: &Pretty) {
         let boundaries = "| ".len() + " |".len();
-        let width = self.interesting_ascii(0, pretty, 0, 0);
+        let (pretty, width) = self.interesting_ascii(0, pretty, 0, 0);
         let total_len = width + boundaries;
         let mut dat = LinedBuffer {
             out,
@@ -15,44 +17,52 @@ impl PrettyConfig {
         dat.out.push_str("\n");
 
         dat.begin_line();
-        dat.line_ascii(pretty, 0, 0);
+        dat.line_ascii(&pretty, 0, 0);
         dat.pusheen();
 
         Self::horizon(dat.out, total_len);
     }
 
-    pub(crate) fn interesting_ascii(
+    pub(crate) fn interesting_ascii<'a>(
         &self,
         base_indent: usize,
-        pretty: &Pretty,
+        pretty: &'a Pretty<'a>,
         start_add: usize,
         end_add: usize,
-    ) -> usize {
+    ) -> (Pretty<'a>, usize) {
         let first_line_base = base_indent + start_add + end_add;
         let len = pretty.ol_len() + first_line_base;
         if !pretty.has_children() && len <= self.width {
-            len
+            (pretty.ol_to_string().into(), len)
         } else {
             let next_indent = base_indent + self.indent;
             use Pretty::*;
             match pretty {
-                Text(s) => s.chars().count() + first_line_base,
-                Array(v) => v
-                    .iter()
-                    .map(|p| self.interesting_ascii(next_indent, p, 0, ",".len()))
-                    .max()
-                    .unwrap_or(first_line_base + "[]".len() + end_add),
+                Text(s) => {
+                    let len = s.chars().count() + first_line_base;
+                    (s.as_ref().into(), len)
+                }
+                Array(v) => {
+                    let (v, lens): (Vec<_>, Vec<_>) = (v.iter())
+                        .map(|p| self.interesting_ascii(next_indent, p, 0, ",".len()))
+                        .unzip();
+                    let max =
+                        (lens.into_iter().max()).unwrap_or(first_line_base + "[]".len() + end_add);
+                    (Array(v), max)
+                }
                 Record(xml) => {
                     let header = xml.name.chars().count() + first_line_base + " {".len();
-                    let children = (xml.children.iter().enumerate()).map(|(i, p)| {
-                        let at_the_end = if i < xml.children.len() - 1 {
-                            ",".len()
-                        } else {
-                            0
-                        };
-                        self.interesting_ascii(next_indent, p, 0, at_the_end)
-                    });
-                    (xml.fields.iter().enumerate())
+                    let (children, c_lens): (Vec<_>, Vec<_>) = (xml.children.iter().enumerate())
+                        .map(|(i, p)| {
+                            let at_the_end = if i < xml.children.len() - 1 {
+                                ",".len()
+                            } else {
+                                0
+                            };
+                            self.interesting_ascii(next_indent, p, 0, at_the_end)
+                        })
+                        .unzip();
+                    let (fields, f_lens): (Vec<_>, Vec<_>) = (xml.fields.iter().enumerate())
                         .map(|(i, (k, v))| {
                             let end = if i < xml.fields.len() - 1 {
                                 ",".len()
@@ -60,12 +70,26 @@ impl PrettyConfig {
                                 0
                             };
                             let start = k.chars().count() + ": ".len();
-                            self.interesting_ascii(next_indent, v, start, end)
+                            let (f, len) = self.interesting_ascii(next_indent, v, start, end);
+                            ((k.clone(), f), len)
                         })
+                        .unzip();
+                    // TODO
+                    let fields_is_linear = false;
+                    let max = (f_lens.into_iter())
                         .chain(vec![header, "}".len() + end_add].into_iter())
-                        .chain(children)
+                        .chain(c_lens)
                         .max()
-                        .unwrap()
+                        .unwrap();
+                    (
+                        Record(XmlNode {
+                            name: xml.name.clone(),
+                            fields: BTreeMap::from_iter(fields.into_iter()),
+                            children,
+                            fields_is_linear,
+                        }),
+                        max,
+                    )
                 }
             }
         }
