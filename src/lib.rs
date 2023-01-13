@@ -45,15 +45,10 @@ pub enum Pretty<'a> {
     Array(Vec<Self>),
 }
 
-pub(crate) struct Array_<'a> {
-    pub el: &'a [Pretty<'a>],
-    pub is_linear: bool,
-}
-
 pub(crate) enum Pretty_<'a> {
     Text(&'a str),
     Record(XmlNode_<'a>),
-    Array(Array_<'a>),
+    Array(&'a [Self]),
 }
 
 impl<'a> Pretty<'a> {
