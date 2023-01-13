@@ -30,12 +30,30 @@ impl<'a> XmlNode<'a> {
     }
 }
 
+pub(crate) struct XmlNode_<'a> {
+    pub name: &'a str,
+    pub fields: BTreeMap<&'a str, Pretty<'a>>,
+    pub fields_is_linear: bool,
+    pub children: &'a [Pretty<'a>],
+}
+
 /// Use `into`!!
 #[derive(Clone)]
 pub enum Pretty<'a> {
     Text(Str<'a>),
     Record(XmlNode<'a>),
     Array(Vec<Self>),
+}
+
+pub(crate) struct Array_<'a> {
+    pub el: &'a [Pretty<'a>],
+    pub is_linear: bool,
+}
+
+pub(crate) enum Pretty_<'a> {
+    Text(&'a str),
+    Record(XmlNode_<'a>),
+    Array(Array_<'a>),
 }
 
 impl<'a> Pretty<'a> {
