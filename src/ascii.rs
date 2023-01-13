@@ -17,7 +17,7 @@ impl PrettyConfig {
         dat.out.push_str("\n");
 
         dat.begin_line();
-        dat.line_ascii(&pretty, 0, 0);
+        dat.line_ascii(&pretty, 0);
         dat.pusheen();
 
         Self::horizon(dat.out, total_len);
@@ -97,44 +97,32 @@ impl PrettyConfig {
 }
 
 impl<'a> LinedBuffer<'a> {
-    pub(crate) fn line_ascii(
-        &mut self,
-        pretty: &Pretty,
-        self_indent_len: usize,
-        additional: usize,
-    ) {
-        use Pretty::*;
+    pub(crate) fn line_ascii(&mut self, pretty: &Pretty, self_indent_len: usize) {
         let indent_len = self_indent_len + self.config.indent;
-
-        let ol_len = pretty.ol_len();
-        if !pretty.has_children() && ol_len + indent_len + additional < self.width {
-            pretty.ol_build_str_ascii(self.out);
-            self.already_occupied += ol_len;
-        } else {
-            match pretty {
-                Text(s) => self.push(s),
-                Array(v) => {
-                    self.push("[");
-                    if v.is_empty() {
-                        self.push("]");
-                        return;
+        use Pretty::*;
+        match pretty {
+            Text(s) => self.push(s),
+            Array(v) => {
+                self.push("[");
+                if v.is_empty() {
+                    self.push("]");
+                    return;
+                }
+                self.pusheen();
+                for (i, e) in v.iter().enumerate() {
+                    self.begin_line();
+                    self.pip(indent_len);
+                    self.line_ascii(e, indent_len);
+                    if i < v.len() - 1 {
+                        self.push(",");
                     }
                     self.pusheen();
-                    for (i, e) in v.iter().enumerate() {
-                        self.begin_line();
-                        self.pip(indent_len);
-                        self.line_ascii(e, indent_len, 0);
-                        if i < v.len() - 1 {
-                            self.push(",");
-                        }
-                        self.pusheen();
-                    }
-                    self.begin_line();
-                    self.pip(self_indent_len);
-                    self.push("]");
                 }
-                Record(xml) => self.line_ascii_xml(xml, indent_len, self_indent_len),
+                self.begin_line();
+                self.pip(self_indent_len);
+                self.push("]");
             }
+            Record(xml) => self.line_ascii_xml(xml, indent_len, self_indent_len),
         }
     }
 
@@ -147,7 +135,7 @@ impl<'a> LinedBuffer<'a> {
             self.pip(indent_len);
             self.push(k);
             self.push(": ");
-            self.line_ascii(v, indent_len, k.len() + ": ".len());
+            self.line_ascii(v, indent_len);
             if i < xml.fields.len() - 1 {
                 self.push(",");
             }
@@ -160,7 +148,7 @@ impl<'a> LinedBuffer<'a> {
             self.pusheen();
             self.begin_line();
             self.pip(indent_len);
-            self.line_ascii(child, indent_len, 0);
+            self.line_ascii(child, indent_len);
         }
     }
 }
