@@ -27,7 +27,7 @@ pub struct XmlNode<'a> {
 
 impl<'a> XmlNode<'a> {
     pub fn has_children(&self) -> bool {
-        !self.children.is_empty()
+        !self.children.is_empty() && self.fields.values().any(Pretty::has_children)
     }
 
     pub fn new(
@@ -76,9 +76,12 @@ impl<'a> Pretty<'a> {
     }
 
     pub fn has_children(&self) -> bool {
+        use Pretty::*;
         match self {
-            Pretty::Record(xml) => xml.has_children(),
-            _ => false,
+            Record(xml) => xml.has_children(),
+            Array(v) => v.iter().any(Self::has_children),
+            Text(..) => false,
+            Linearized(..) => unreachable!(),
         }
     }
 
