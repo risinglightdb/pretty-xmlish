@@ -63,9 +63,6 @@ impl PrettyConfig {
                 let header = xml.name.chars().count() + first_line_base;
                 // Here, `len` does not include the children
                 let fields_is_linear = len < self.width;
-                // if fields_is_linear {
-                //     println!("{}/{}", len, self.width);
-                // }
                 let (fields, f_lens): (Vec<_>, Vec<_>) = (xml.fields.iter())
                     .map(|(k, v)| {
                         let (f, len) = self.interesting_unicode(
@@ -183,13 +180,13 @@ impl<'a> LinedBuffer<'a> {
         choose: impl Fn(bool) -> (&'b String, &'b String),
         indent_len: usize,
     ) {
-        self.push(&xml.name);
         let has_children = xml.has_children();
         if xml.fields_is_linear {
             xml.ol_build_str_ascii(self.out);
             self.already_occupied += xml.ol_len();
             self.pusheen();
         } else {
+            self.push(&xml.name);
             self.pusheen();
             for (i, (k, v)) in xml.fields.iter().enumerate() {
                 self.begin_line();
