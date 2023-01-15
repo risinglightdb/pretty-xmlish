@@ -127,6 +127,7 @@ impl<'a> Pretty<'a> {
         builder
     }
 
+    /// Does not include children of records.
     pub(crate) fn ol_len(&self) -> usize {
         use Pretty::*;
         match self {

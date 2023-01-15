@@ -75,8 +75,7 @@ impl PrettyConfig {
                         ((k.clone(), f), len)
                     })
                     .unzip();
-                // TODO
-                let fields_is_linear = false;
+                let fields_is_linear = len <= self.width;
                 let max = (f_lens.into_iter())
                     .chain(vec![header, "}".len() + end_add].into_iter())
                     .chain(c_lens)
