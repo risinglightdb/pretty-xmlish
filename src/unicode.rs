@@ -80,15 +80,13 @@ impl PrettyConfig {
                     .chain(Some(header).into_iter())
                     .max()
                     .unwrap();
-                (
-                    Record(XmlNode {
-                        name: xml.name.clone(),
-                        fields: BTreeMap::from_iter(fields.into_iter()),
-                        fields_is_linear,
-                        children,
-                    }),
-                    max,
-                )
+                let xml_node = XmlNode {
+                    name: xml.name.clone(),
+                    fields: BTreeMap::from_iter(fields.into_iter()),
+                    fields_is_linear,
+                    children,
+                };
+                (Record(xml_node), max)
             }
             Linearized(..) => unreachable!("Linearized in input is not allowed"),
         }
