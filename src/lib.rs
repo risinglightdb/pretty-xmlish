@@ -51,8 +51,8 @@ impl<'a> XmlNode<'a> {
             .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
             .sum();
         let mid = (self.fields.len() - 1) * ", ".len();
-        let beg = " { ".len() + " }".len() + self.name.chars().count();
-        mem + mid + beg
+        let begin_end = " {  }".len() + self.name.chars().count();
+        mem + mid + begin_end
     }
 
     pub fn new(
