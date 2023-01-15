@@ -85,8 +85,8 @@ impl PrettyConfig {
                         Record(XmlNode {
                             name: xml.name.clone(),
                             fields: BTreeMap::from_iter(fields.into_iter()),
-                            children,
                             fields_is_linear,
+                            children,
                         }),
                         max,
                     )

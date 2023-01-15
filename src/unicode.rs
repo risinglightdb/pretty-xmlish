@@ -1,4 +1,4 @@
-use std::iter::repeat;
+use std::{collections::BTreeMap, iter::repeat};
 
 use crate::{LinedBuffer, Pretty, PrettyConfig, XmlNode};
 
@@ -15,7 +15,7 @@ mod characters {
 impl PrettyConfig {
     pub fn unicode(&self, out: &mut String, pretty: &Pretty) {
         let boundaries = "| ".len() + " |".len();
-        let width = self.interesting_unicode(0, pretty, 0);
+        let (pretty, width) = self.interesting_unicode(0, pretty, 0);
         let total_len = width + boundaries;
         let mut dat = LinedBuffer {
             out,
@@ -27,43 +27,67 @@ impl PrettyConfig {
         dat.out.push_str("\n");
 
         dat.begin_line();
-        dat.line_unicode(pretty, 0, Default::default());
+        dat.line_unicode(&pretty, 0, Default::default());
         dat.pusheen();
 
         Self::horizon(dat.out, total_len);
     }
 
-    pub(crate) fn interesting_unicode(
+    pub(crate) fn interesting_unicode<'a>(
         &self,
         base_indent: usize,
-        pretty: &Pretty,
+        pretty: &'a Pretty<'a>,
         additional: usize,
-    ) -> usize {
+    ) -> (Pretty<'a>, usize) {
         let first_line_base = base_indent + additional;
         let len = pretty.ol_len() + first_line_base;
         if !pretty.has_children() && len <= self.width {
-            len
+            (Pretty::Linearized(Box::new(pretty.clone()), len), len)
         } else {
             let next_indent = base_indent + self.indent;
             use Pretty::*;
             match pretty {
-                Text(s) => s.chars().count() + first_line_base,
-                Array(list) => list
-                    .iter()
-                    .map(|p| self.interesting_unicode(next_indent, p, 0))
-                    .max()
-                    .unwrap_or(first_line_base + "[]".len()),
+                Text(s) => {
+                    let len = s.chars().count() + first_line_base;
+                    (s.as_ref().into(), len)
+                }
+                Array(v) => {
+                    let (v, lens): (Vec<_>, Vec<_>) = (v.iter())
+                        .map(|p| self.interesting_unicode(next_indent, p, 0))
+                        .unzip();
+                    let max = (lens.into_iter().max()).unwrap_or(first_line_base + "[]".len());
+                    (Array(v), max)
+                }
                 Record(xml) => {
                     let header = xml.name.chars().count() + first_line_base;
-                    let fields = xml.fields.iter().map(|(k, v)| {
-                        self.interesting_unicode(next_indent, v, k.chars().count() + ": ".len())
-                    });
-                    (xml.children.iter())
+                    // TODO
+                    let fields_is_linear = false;
+                    let (fields, f_lens): (Vec<_>, Vec<_>) = (xml.fields.iter())
+                        .map(|(k, v)| {
+                            let (f, len) = self.interesting_unicode(
+                                next_indent,
+                                v,
+                                k.chars().count() + ": ".len(),
+                            );
+                            ((k.clone(), f), len)
+                        })
+                        .unzip();
+                    let (children, c_lens): (Vec<_>, Vec<_>) = (xml.children.iter())
                         .map(|p| self.interesting_unicode(next_indent, p, 0))
+                        .unzip();
+                    let max = (f_lens.into_iter().chain(c_lens.into_iter()))
                         .chain(Some(header).into_iter())
-                        .chain(fields)
                         .max()
-                        .unwrap()
+                        .unwrap();
+                    (
+                        Record(XmlNode {
+                            name: xml.name.clone(),
+                            fields: BTreeMap::from_iter(fields.into_iter()),
+                            fields_is_linear,
+                            children,
+                        }),
+                        max,
+                    )
                 }
                 Linearized(..) => unreachable!("Linearized in input is not allowed"),
             }
@@ -88,68 +112,62 @@ impl<'a> LinedBuffer<'a> {
         use Pretty::*;
         let indent_len = indent_len + self.config.indent;
 
-        let ol_len = pretty.ol_len();
-        if !pretty.has_children() && ol_len + indent_len < self.width {
-            pretty.ol_build_str_ascii(self.out);
-            self.already_occupied += ol_len;
-        } else {
-            enum Cubical<'a> {
-                Cartesian(&'a [Pretty<'a>]),
-                DeMorgan(&'a XmlNode<'a>),
+        enum Cubical<'a> {
+            Cartesian(&'a [Pretty<'a>]),
+            DeMorgan(&'a XmlNode<'a>),
+        }
+        use Cubical::*;
+        let regularity = match pretty {
+            Text(s) => {
+                self.push(s);
+                return;
             }
-            use Cubical::*;
-            let regularity = match pretty {
-                Text(s) => {
-                    self.push(s);
+            Linearized(p, ol_len) => {
+                p.ol_build_str_ascii(self.out);
+                self.already_occupied += ol_len;
+                return;
+            }
+            Record(xml) => DeMorgan(xml),
+            Array(list) => Cartesian(list),
+        };
+        use characters::*;
+        let idt = self.config.indent;
+        let cont_prefix = append_prefix(prefix, idt, UD, ' ');
+        let last_cont_prefix = append_prefix(prefix, idt, ' ', ' ');
+        let fields_prefix = append_prefix(prefix, idt, URD, LR);
+        let last_field_prefix = append_prefix(prefix, idt, UR, LR);
+        let choose = |is_not_last_line: bool| {
+            if is_not_last_line {
+                (&cont_prefix, &fields_prefix)
+            } else {
+                (&last_cont_prefix, &last_field_prefix)
+            }
+        };
+        match regularity {
+            Cartesian(list) => {
+                if list.is_empty() {
+                    self.push("[]");
                     return;
                 }
-                Linearized(p, ol_len) => {
-                    p.ol_build_str_ascii(self.out);
-                    self.already_occupied += ol_len;
-                    return;
-                }
-                Record(xml) => DeMorgan(xml),
-                Array(list) => Cartesian(list),
-            };
-            use characters::*;
-            let idt = self.config.indent;
-            let cont_prefix = append_prefix(prefix, idt, UD, ' ');
-            let last_cont_prefix = append_prefix(prefix, idt, ' ', ' ');
-            let fields_prefix = append_prefix(prefix, idt, URD, LR);
-            let last_field_prefix = append_prefix(prefix, idt, UR, LR);
-            let choose = |is_not_last_line: bool| {
-                if is_not_last_line {
-                    (&cont_prefix, &fields_prefix)
-                } else {
-                    (&last_cont_prefix, &last_field_prefix)
-                }
-            };
-            match regularity {
-                Cartesian(list) => {
-                    if list.is_empty() {
-                        self.push("[]");
-                        return;
-                    }
-                    use characters::*;
-                    let fst_field_prefix = append_prefix(prefix, idt, DR, LR);
-                    self.pusheen();
-                    for (i, p) in list.iter().enumerate() {
-                        self.begin_line();
-                        let is_not_last_line = i < list.len() - 1;
-                        let (cont_prefix, fields_prefix) = if i == 0 {
-                            (&cont_prefix, &fst_field_prefix)
-                        } else {
-                            choose(is_not_last_line)
-                        };
-                        self.push(&fields_prefix);
-                        self.line_unicode(p, indent_len, &cont_prefix);
-                        if is_not_last_line {
-                            self.pusheen();
-                        }
+                use characters::*;
+                let fst_field_prefix = append_prefix(prefix, idt, DR, LR);
+                self.pusheen();
+                for (i, p) in list.iter().enumerate() {
+                    self.begin_line();
+                    let is_not_last_line = i < list.len() - 1;
+                    let (cont_prefix, fields_prefix) = if i == 0 {
+                        (&cont_prefix, &fst_field_prefix)
+                    } else {
+                        choose(is_not_last_line)
+                    };
+                    self.push(&fields_prefix);
+                    self.line_unicode(p, indent_len, &cont_prefix);
+                    if is_not_last_line {
+                        self.pusheen();
                     }
                 }
-                DeMorgan(xml) => self.line_unicode_xml(xml, choose, indent_len),
             }
+            DeMorgan(xml) => self.line_unicode_xml(xml, choose, indent_len),
         }
     }
 
