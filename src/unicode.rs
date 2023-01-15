@@ -13,7 +13,7 @@ mod characters {
 }
 
 impl PrettyConfig {
-    pub fn unicode(&self, out: &mut String, pretty: &Pretty) {
+    pub fn unicode(&self, out: &mut String, pretty: &Pretty) -> usize {
         let boundaries = "| ".len() + " |".len();
         let (pretty, width) = self.interesting_unicode(0, pretty, 0);
         let total_len = width + boundaries;
@@ -31,6 +31,7 @@ impl PrettyConfig {
         dat.pusheen();
 
         Self::horizon(dat.out, total_len);
+        width
     }
 
     pub(crate) fn interesting_unicode<'a>(
