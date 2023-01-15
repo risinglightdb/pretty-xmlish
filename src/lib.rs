@@ -50,6 +50,7 @@ pub enum Pretty<'a> {
     Text(Str<'a>),
     Record(XmlNode<'a>),
     Array(Vec<Self>),
+    Linearized(Box<Self>, usize),
 }
 
 impl<'a> Pretty<'a> {
@@ -114,6 +115,7 @@ impl<'a> Pretty<'a> {
                 }
                 builder.push_str(" ]");
             }
+            Linearized(p, _) => p.ol_build_str_ascii(builder),
         }
     }
 
@@ -146,6 +148,7 @@ impl<'a> Pretty<'a> {
                 let beg = "[  ]".len();
                 mem + mid + beg
             }
+            Linearized(_, len) => *len,
         }
     }
 }

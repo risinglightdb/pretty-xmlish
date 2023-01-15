@@ -65,6 +65,7 @@ impl PrettyConfig {
                         .max()
                         .unwrap()
                 }
+                Linearized(..) => unreachable!("Linearized in input is not allowed"),
             }
         }
     }
@@ -100,6 +101,11 @@ impl<'a> LinedBuffer<'a> {
             let regularity = match pretty {
                 Text(s) => {
                     self.push(s);
+                    return;
+                }
+                Linearized(p, ol_len) => {
+                    p.ol_build_str_ascii(self.out);
+                    self.already_occupied += ol_len;
                     return;
                 }
                 Record(xml) => DeMorgan(xml),

@@ -33,7 +33,7 @@ impl PrettyConfig {
         let first_line_base = base_indent + start_add + end_add;
         let len = pretty.ol_len() + first_line_base;
         if !pretty.has_children() && len <= self.width {
-            (pretty.ol_to_string().into(), len)
+            (Pretty::Linearized(Box::new(pretty.clone()), len), len)
         } else {
             let next_indent = base_indent + self.indent;
             use Pretty::*;
@@ -91,6 +91,7 @@ impl PrettyConfig {
                         max,
                     )
                 }
+                Linearized(..) => unreachable!("Linearized inputs are not allowed"),
             }
         }
     }
@@ -123,6 +124,10 @@ impl<'a> LinedBuffer<'a> {
                 self.push("]");
             }
             Record(xml) => self.line_ascii_xml(xml, indent_len, self_indent_len),
+            Linearized(p, ol_len) => {
+                p.ol_build_str_ascii(self.out);
+                self.already_occupied += ol_len;
+            }
         }
     }
 
