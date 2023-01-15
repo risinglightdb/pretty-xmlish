@@ -76,7 +76,12 @@ impl PrettyConfig {
                 let (children, c_lens): (Vec<_>, Vec<_>) = (xml.children.iter())
                     .map(|p| self.interesting_unicode(next_indent, p, 0))
                     .unzip();
-                let max = (f_lens.into_iter().chain(c_lens.into_iter()))
+                let max = (c_lens.into_iter())
+                    .chain(if fields_is_linear {
+                        vec![len].into_iter()
+                    } else {
+                        f_lens.into_iter()
+                    })
                     .chain(Some(header).into_iter())
                     .max()
                     .unwrap();
@@ -176,12 +181,13 @@ impl<'a> LinedBuffer<'a> {
         indent_len: usize,
     ) {
         self.push(&xml.name);
-        self.pusheen();
         let has_children = xml.has_children();
         if xml.fields_is_linear {
             xml.ol_build_str_ascii(self.out);
             self.already_occupied += xml.ol_len();
+            self.pusheen();
         } else {
+            self.pusheen();
             for (i, (k, v)) in xml.fields.iter().enumerate() {
                 self.begin_line();
                 let is_not_last_line = has_children || i < xml.fields.len() - 1;

@@ -29,7 +29,7 @@ pub struct XmlNode<'a> {
 
 impl<'a> XmlNode<'a> {
     pub fn has_children(&self) -> bool {
-        !self.children.is_empty() && self.fields.values().any(Pretty::has_children)
+        !self.children.is_empty() || self.fields.values().any(Pretty::has_children)
     }
 
     fn ol_build_str_ascii(&self, builder: &mut String) {
@@ -106,7 +106,8 @@ impl<'a> Pretty<'a> {
             Record(xml) => xml.has_children(),
             Array(v) => v.iter().any(Self::has_children),
             Text(..) => false,
-            Linearized(..) => unreachable!(),
+            // Note: linearization happens only when children are absent
+            Linearized(..) => false,
         }
     }
 

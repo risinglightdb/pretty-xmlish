@@ -76,11 +76,15 @@ impl PrettyConfig {
                     })
                     .unzip();
                 let fields_is_linear = len <= self.width;
-                let max = (f_lens.into_iter())
-                    .chain(vec![header, "}".len() + end_add].into_iter())
-                    .chain(c_lens)
-                    .max()
-                    .unwrap();
+                let max = (c_lens.into_iter())
+                .chain(vec![header, "}".len() + end_add].into_iter())
+                .chain(if fields_is_linear {
+                    vec![len].into_iter()
+                } else {
+                    f_lens.into_iter()
+                })
+                .max()
+                .unwrap();
                 let xml_node = XmlNode {
                     name: xml.name.clone(),
                     fields: BTreeMap::from_iter(fields.into_iter()),
