@@ -34,66 +34,65 @@ impl PrettyConfig {
         let ol_len = pretty.ol_len();
         let len = ol_len + first_line_base;
         if !pretty.has_children() && len <= self.width {
-            (Pretty::Linearized(Box::new(pretty.clone()), ol_len), len)
-        } else {
-            let next_indent = base_indent + self.indent;
-            use Pretty::*;
-            match pretty {
-                Text(s) => {
-                    let len = s.chars().count() + first_line_base;
-                    (s.as_ref().into(), len)
-                }
-                Array(v) => {
-                    let (v, lens): (Vec<_>, Vec<_>) = (v.iter())
-                        .map(|p| self.interesting_ascii(next_indent, p, 0, ",".len()))
-                        .unzip();
-                    let max =
-                        (lens.into_iter().max()).unwrap_or(first_line_base + "[]".len() + end_add);
-                    (Array(v), max)
-                }
-                Record(xml) => {
-                    let header = xml.name.chars().count() + first_line_base + " {".len();
-                    let (children, c_lens): (Vec<_>, Vec<_>) = (xml.children.iter().enumerate())
-                        .map(|(i, p)| {
-                            let at_the_end = if i < xml.children.len() - 1 {
-                                ",".len()
-                            } else {
-                                0
-                            };
-                            self.interesting_ascii(next_indent, p, 0, at_the_end)
-                        })
-                        .unzip();
-                    let (fields, f_lens): (Vec<_>, Vec<_>) = (xml.fields.iter().enumerate())
-                        .map(|(i, (k, v))| {
-                            let end = if i < xml.fields.len() - 1 {
-                                ",".len()
-                            } else {
-                                0
-                            };
-                            let start = k.chars().count() + ": ".len();
-                            let (f, len) = self.interesting_ascii(next_indent, v, start, end);
-                            ((k.clone(), f), len)
-                        })
-                        .unzip();
-                    // TODO
-                    let fields_is_linear = false;
-                    let max = (f_lens.into_iter())
-                        .chain(vec![header, "}".len() + end_add].into_iter())
-                        .chain(c_lens)
-                        .max()
-                        .unwrap();
-                    (
-                        Record(XmlNode {
-                            name: xml.name.clone(),
-                            fields: BTreeMap::from_iter(fields.into_iter()),
-                            fields_is_linear,
-                            children,
-                        }),
-                        max,
-                    )
-                }
-                Linearized(..) => unreachable!("Linearized inputs are not allowed"),
+            return (Pretty::Linearized(Box::new(pretty.clone()), ol_len), len);
+        }
+        let next_indent = base_indent + self.indent;
+        use Pretty::*;
+        match pretty {
+            Text(s) => {
+                let len = s.chars().count() + first_line_base;
+                (s.as_ref().into(), len)
             }
+            Array(v) => {
+                let (v, lens): (Vec<_>, Vec<_>) = (v.iter())
+                    .map(|p| self.interesting_ascii(next_indent, p, 0, ",".len()))
+                    .unzip();
+                let max =
+                    (lens.into_iter().max()).unwrap_or(first_line_base + "[]".len() + end_add);
+                (Array(v), max)
+            }
+            Record(xml) => {
+                let header = xml.name.chars().count() + first_line_base + " {".len();
+                let (children, c_lens): (Vec<_>, Vec<_>) = (xml.children.iter().enumerate())
+                    .map(|(i, p)| {
+                        let at_the_end = if i < xml.children.len() - 1 {
+                            ",".len()
+                        } else {
+                            0
+                        };
+                        self.interesting_ascii(next_indent, p, 0, at_the_end)
+                    })
+                    .unzip();
+                let (fields, f_lens): (Vec<_>, Vec<_>) = (xml.fields.iter().enumerate())
+                    .map(|(i, (k, v))| {
+                        let end = if i < xml.fields.len() - 1 {
+                            ",".len()
+                        } else {
+                            0
+                        };
+                        let start = k.chars().count() + ": ".len();
+                        let (f, len) = self.interesting_ascii(next_indent, v, start, end);
+                        ((k.clone(), f), len)
+                    })
+                    .unzip();
+                // TODO
+                let fields_is_linear = false;
+                let max = (f_lens.into_iter())
+                    .chain(vec![header, "}".len() + end_add].into_iter())
+                    .chain(c_lens)
+                    .max()
+                    .unwrap();
+                (
+                    Record(XmlNode {
+                        name: xml.name.clone(),
+                        fields: BTreeMap::from_iter(fields.into_iter()),
+                        fields_is_linear,
+                        children,
+                    }),
+                    max,
+                )
+            }
+            Linearized(..) => unreachable!("Linearized inputs are not allowed"),
         }
     }
 }
