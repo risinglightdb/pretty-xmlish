@@ -31,9 +31,10 @@ impl PrettyConfig {
         end_add: usize,
     ) -> (Pretty<'a>, usize) {
         let first_line_base = base_indent + start_add + end_add;
-        let len = pretty.ol_len() + first_line_base;
+        let ol_len = pretty.ol_len();
+        let len = ol_len + first_line_base;
         if !pretty.has_children() && len <= self.width {
-            (Pretty::Linearized(Box::new(pretty.clone()), len), len)
+            (Pretty::Linearized(Box::new(pretty.clone()), ol_len), len)
         } else {
             let next_indent = base_indent + self.indent;
             use Pretty::*;
