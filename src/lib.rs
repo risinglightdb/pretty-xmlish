@@ -21,6 +21,8 @@ pub use unicode::*;
 pub struct XmlNode<'a> {
     pub(crate) name: Str<'a>,
     pub(crate) fields: BTreeMap<Str<'a>, Pretty<'a>>,
+    /// Currently, if fields have `XmlNode` with children,
+    /// they will not be considered during linearization.
     pub(crate) fields_is_linear: bool,
     pub(crate) children: Vec<Pretty<'a>>,
 }
@@ -28,6 +30,29 @@ pub struct XmlNode<'a> {
 impl<'a> XmlNode<'a> {
     pub fn has_children(&self) -> bool {
         !self.children.is_empty() && self.fields.values().any(Pretty::has_children)
+    }
+
+    fn ol_build_str_ascii(&self, builder: &mut String) {
+        builder.push_str(&self.name);
+        builder.push_str(" { ");
+        for (i, (k, v)) in self.fields.iter().enumerate() {
+            if i > 0 {
+                builder.push_str(", ");
+            }
+            builder.push_str(k);
+            builder.push_str(": ");
+            v.ol_build_str_ascii(builder);
+        }
+        builder.push_str(" }");
+    }
+
+    fn ol_len(&self) -> usize {
+        let mem: usize = (self.fields.iter())
+            .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
+            .sum();
+        let mid = (self.fields.len() - 1) * ", ".len();
+        let beg = " { ".len() + " }".len() + self.name.chars().count();
+        mem + mid + beg
     }
 
     pub fn new(
@@ -91,19 +116,7 @@ impl<'a> Pretty<'a> {
         use Pretty::*;
         match self {
             Text(s) => builder.push_str(s),
-            Record(xml) => {
-                builder.push_str(&xml.name);
-                builder.push_str(" { ");
-                for (i, (k, v)) in xml.fields.iter().enumerate() {
-                    if i > 0 {
-                        builder.push_str(", ");
-                    }
-                    builder.push_str(k);
-                    builder.push_str(": ");
-                    v.ol_build_str_ascii(builder);
-                }
-                builder.push_str(" }");
-            }
+            Record(xml) => xml.ol_build_str_ascii(builder),
             Array(v) => {
                 if v.is_empty() {
                     builder.push_str("[]");
@@ -135,14 +148,7 @@ impl<'a> Pretty<'a> {
         use Pretty::*;
         match self {
             Text(s) => s.chars().count(),
-            Record(xml) => {
-                let mem: usize = (xml.fields.iter())
-                    .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
-                    .sum();
-                let mid = (xml.fields.len() - 1) * ", ".len();
-                let beg = " { ".len() + " }".len() + xml.name.chars().count();
-                mem + mid + beg
-            }
+            Record(xml) => xml.ol_len(),
             Array(v) => {
                 if v.is_empty() {
                     return "[]".len();

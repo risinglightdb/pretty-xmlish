@@ -178,16 +178,21 @@ impl<'a> LinedBuffer<'a> {
         self.push(&xml.name);
         self.pusheen();
         let has_children = xml.has_children();
-        for (i, (k, v)) in xml.fields.iter().enumerate() {
-            self.begin_line();
-            let is_not_last_line = has_children || i < xml.fields.len() - 1;
-            let (cont_prefix, fields_prefix) = choose(is_not_last_line);
-            self.push(&fields_prefix);
-            self.push(k);
-            self.push(": ");
-            self.line_unicode(v, indent_len + k.len() + ": ".len(), &cont_prefix);
-            if is_not_last_line {
-                self.pusheen();
+        if xml.fields_is_linear {
+            xml.ol_build_str_ascii(self.out);
+            self.already_occupied += xml.ol_len();
+        } else {
+            for (i, (k, v)) in xml.fields.iter().enumerate() {
+                self.begin_line();
+                let is_not_last_line = has_children || i < xml.fields.len() - 1;
+                let (cont_prefix, fields_prefix) = choose(is_not_last_line);
+                self.push(&fields_prefix);
+                self.push(k);
+                self.push(": ");
+                self.line_unicode(v, indent_len + k.len() + ": ".len(), &cont_prefix);
+                if is_not_last_line {
+                    self.pusheen();
+                }
             }
         }
         for (i, child) in xml.children.iter().enumerate() {
