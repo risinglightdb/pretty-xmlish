@@ -3,5 +3,5 @@ name = "data-display"
 version = "0.1.0"
 edition = "2021"
 
-# [dependencies]
+[dependencies]
 # maplit = "1"

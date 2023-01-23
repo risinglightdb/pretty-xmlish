@@ -175,6 +175,7 @@ pub struct PrettyConfig {
     pub indent: usize,
     /// Preferred width of the output, exlusive of the boundaries.
     pub width: usize,
+    pub need_boundaries: bool,
 }
 
 impl PrettyConfig {
@@ -194,7 +195,9 @@ struct LinedBuffer<'a> {
 }
 impl<'a> LinedBuffer<'a> {
     fn begin_line(&mut self) {
-        self.out.push_str("| ");
+        if self.config.need_boundaries {
+            self.out.push_str("| ");
+        }
     }
     fn push(&mut self, s: &str) {
         self.out.push_str(s);
@@ -212,7 +215,12 @@ impl<'a> LinedBuffer<'a> {
         //     self.push(" |\n");
         // } else {
         self.pip(self.width - self.already_occupied);
-        self.push(" |\n");
+        let eol = if self.config.need_boundaries {
+            " |\n"
+        } else {
+            "\n"
+        };
+        self.push(eol);
         // }
         self.already_occupied = 0;
     }
@@ -223,6 +231,7 @@ impl Default for PrettyConfig {
         Self {
             indent: 4,
             width: 120,
+            need_boundaries: true,
         }
     }
 }
