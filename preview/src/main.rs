@@ -1,4 +1,4 @@
-use data_display::*;
+use pretty_xmlish::{PrettyConfig, Pretty};
 #[macro_use]
 extern crate maplit;
 
