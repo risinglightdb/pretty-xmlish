@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "data-display"
+name = "pretty-xmlish"
 version = "0.1.0"

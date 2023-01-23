@@ -1,7 +1,9 @@
 [package]
-name = "data-display"
+name = "pretty-xmlish"
 version = "0.1.0"
 edition = "2021"
+description = "Pretty print XML-ish data with unicode art"
+license = "MIT"
 
 [dependencies]
 # maplit = "1"
