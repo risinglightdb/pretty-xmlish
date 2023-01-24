@@ -184,7 +184,7 @@ impl PrettyConfig {
             return;
         }
         out.push_str("+");
-        out.extend(repeat("-").take(width));
+        out.extend(repeat("-").take(width + 2));
         out.push_str("+");
     }
 }
