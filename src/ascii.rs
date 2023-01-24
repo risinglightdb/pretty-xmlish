@@ -4,23 +4,21 @@ use crate::{LinedBuffer, Pretty, PrettyConfig, XmlNode};
 
 impl PrettyConfig {
     pub fn ascii(&self, out: &mut String, pretty: &Pretty) {
-        let boundaries = "| ".len() + " |".len();
         let (pretty, width) = self.interesting_ascii(0, pretty, 0, 0);
-        let total_len = width + boundaries;
         let mut dat = LinedBuffer {
             out,
             width,
             config: self,
             already_occupied: 0,
         };
-        Self::horizon(dat.out, total_len);
+        self.horizon(dat.out, width);
         dat.out.push_str("\n");
 
         dat.begin_line();
         dat.line_ascii(&pretty, 0);
         dat.pusheen();
 
-        Self::horizon(dat.out, total_len);
+        self.horizon(dat.out, width);
     }
 
     pub(crate) fn interesting_ascii<'a>(

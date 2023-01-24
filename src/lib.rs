@@ -179,9 +179,12 @@ pub struct PrettyConfig {
 }
 
 impl PrettyConfig {
-    pub fn horizon(out: &mut String, total_len: usize) {
+    pub fn horizon(&self, out: &mut String, width: usize) {
+        if !self.need_boundaries {
+            return;
+        }
         out.push_str("+");
-        out.extend(repeat("-").take(total_len - 2));
+        out.extend(repeat("-").take(width));
         out.push_str("+");
     }
 }

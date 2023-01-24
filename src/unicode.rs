@@ -15,30 +15,20 @@ mod characters {
 impl PrettyConfig {
     pub fn unicode(&self, out: &mut String, pretty: &Pretty) -> usize {
         let (pretty, width) = self.interesting_unicode(0, pretty, 0);
-        let total_len = if self.need_boundaries {
-            let boundaries = "| ".len() + " |".len();
-            width + boundaries
-        } else {
-            width
-        };
         let mut dat = LinedBuffer {
             out,
             width,
             config: self,
             already_occupied: 0,
         };
-        if self.need_boundaries {
-            Self::horizon(dat.out, total_len)
-        };
+        self.horizon(dat.out, width);
         dat.out.push_str("\n");
 
         dat.begin_line();
         dat.line_unicode(&pretty, 0, Default::default());
         dat.pusheen();
 
-        if self.need_boundaries {
-            Self::horizon(dat.out, total_len);
-        }
+        self.horizon(dat.out, width);
         width
     }
 

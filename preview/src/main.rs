@@ -1,4 +1,4 @@
-use pretty_xmlish::{PrettyConfig, Pretty};
+use pretty_xmlish::{Pretty, PrettyConfig};
 #[macro_use]
 extern crate maplit;
 
@@ -56,7 +56,9 @@ fn main() {
     );
     let mut out = String::new();
     let w = config.unicode(&mut out, &pretty);
-    // out.push('\n');
+    out.push('\n');
+    config.need_boundaries = false;
+    config.unicode(&mut out, &pretty);
     // config.ascii(&mut out, &pretty);
     println!("{}\nActual width: {}", out, w);
 }
