@@ -13,9 +13,9 @@ type Str<'a> = Cow<'a, str>;
 type Pretties<'a> = Cow<'a, [Pretty<'a>]>;
 
 pub mod ascii;
-pub use ascii::*;
 pub mod unicode;
-pub use unicode::*;
+
+pub mod helper;
 
 #[derive(Clone)]
 pub struct XmlNode<'a> {
@@ -50,7 +50,7 @@ impl<'a> XmlNode<'a> {
         let mem: usize = (self.fields.iter())
             .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
             .sum();
-        let mid = (self.fields.len() - 1) * ", ".len();
+        let mid = self.fields.len().saturating_sub(1) * ", ".len();
         let begin_end = " {  }".len() + self.name.chars().count();
         mem + mid + begin_end
     }
@@ -80,7 +80,7 @@ pub enum Pretty<'a> {
 
 impl<'a> Pretty<'a> {
     pub fn simple_record(
-        name: &'a str,
+        name: impl Into<Str<'a>>,
         fields: BTreeMap<&'a str, Self>,
         children: Vec<Self>,
     ) -> Self {
