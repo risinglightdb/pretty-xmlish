@@ -4,6 +4,8 @@ version = "0.1.1"
 edition = "2021"
 description = "Pretty print XML-ish data with unicode art"
 license = "MIT"
+readme = ".github/README.md"
+authors = ["ice1000 <ice1000kotlin@foxmail.com>"]
 
 [dependencies]
 # maplit = "1"
