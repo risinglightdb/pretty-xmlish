@@ -88,6 +88,13 @@ impl<'a> Pretty<'a> {
         let fields = fields.into_iter().map(|(k, v)| (k.into(), v)).collect();
         Self::Record(XmlNode::new(name, fields, children))
     }
+    // Blame Rust for not having named arguments and default values.
+    pub fn fieldless_record(name: impl Into<Str<'a>>, children: Vec<Self>) -> Self {
+        Self::simple_record(name, Default::default(), children)
+    }
+    pub fn childless_record(name: impl Into<Str<'a>>, fields: BTreeMap<&'a str, Self>) -> Self {
+        Self::simple_record(name, fields, Default::default())
+    }
     pub fn list_of_strings(list: &'a [&'a str]) -> Self {
         Self::Array(list.iter().map(|&s| s.into()).collect())
     }
