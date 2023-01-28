@@ -1,3 +1,19 @@
+//! How to use this library? Very easy!
+//!
+//! ```rust
+//! use pretty_xmlish::{Pretty, PrettyConfig};
+//! use std::collections::BTreeMap;
+//! let mut config = PrettyConfig::default();
+//! let pretty = Pretty::simple_record("BatchNestedLoopJoin",
+//!     BTreeMap::new(), // fields, if any
+//!     vec![] // children, if any
+//! );
+//! let mut out = String::with_capacity(114514);
+//! let w = config.unicode(&mut out, &pretty);
+//! // w is the width of the output
+//! // output is stored in `out`
+//! ```
+
 use std::{
     borrow::Cow,
     collections::BTreeMap,
