@@ -3,19 +3,19 @@
 version = 3
 
 [[package]]
+name = "assoc"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37200bb9adb6850bb06aa3970a77e9697a446ed37517cfd0a8207b2de8cd53a8"
+
+[[package]]
 name = "data-preview"
 version = "0.1.0"
 dependencies = [
- "maplit",
+ "assoc",
  "pretty-xmlish",
 ]
 
 [[package]]
-name = "maplit"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
-
-[[package]]
 name = "pretty-xmlish"
-version = "0.1.0"
+version = "0.1.3"

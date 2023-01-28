@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-maplit = "1"
+assoc = "0.1"
 pretty-xmlish = { path = "../" }
