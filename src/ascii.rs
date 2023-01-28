@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use crate::{LinedBuffer, Pretty, PrettyConfig, XmlNode};
 
 impl PrettyConfig {
@@ -91,7 +89,7 @@ impl PrettyConfig {
                 };
                 (Record(xml_node), max)
             }
-            Linearized(..) => unreachable!("Linearized inputs are not allowed"),
+            Linearized(_, l) => (pretty.clone(), *l),
         }
     }
 }

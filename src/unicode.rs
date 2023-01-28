@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, iter::repeat};
+use std::iter::repeat;
 
 use crate::{LinedBuffer, Pretty, PrettyConfig, XmlNode};
 
@@ -92,7 +92,7 @@ impl PrettyConfig {
                 };
                 (Record(xml_node), max)
             }
-            Linearized(..) => unreachable!("Linearized in input is not allowed"),
+            Linearized(_, l) => (pretty.clone(), *l),
         }
     }
 }
