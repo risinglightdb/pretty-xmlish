@@ -94,7 +94,7 @@ pub enum Pretty<'a> {
     Text(Str<'a>),
     Record(XmlNode<'a>),
     Array(Vec<Self>),
-    Linearized(Box<Self>, usize),
+    Linearized(&'a Self, usize),
 }
 
 impl<'a> Pretty<'a> {
