@@ -18,7 +18,6 @@
 
 use std::{
     borrow::Cow,
-    collections::BTreeMap,
     fmt::{Debug, Display},
     iter::repeat,
 };
@@ -29,6 +28,8 @@ type Str<'a> = Cow<'a, str>;
 /// https://github.com/rust-lang/rust/issues/23714
 #[allow(dead_code)]
 type Pretties<'a> = Cow<'a, [Pretty<'a>]>;
+/// Good kids don't do this.
+type BTreeMap<K, V> = Vec<(K, V)>;
 
 pub mod ascii;
 pub mod unicode;
@@ -47,7 +48,7 @@ pub struct XmlNode<'a> {
 
 impl<'a> XmlNode<'a> {
     pub fn has_children(&self) -> bool {
-        !self.children.is_empty() || self.fields.values().any(Pretty::has_children)
+        !self.children.is_empty() || self.fields.iter().map(|(_, x)| x).any(Pretty::has_children)
     }
 
     fn ol_build_str_ascii(&self, builder: &mut String) {

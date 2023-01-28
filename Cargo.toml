@@ -8,4 +8,4 @@ readme = ".github/README.md"
 authors = ["ice1000 <ice1000kotlin@foxmail.com>"]
 
 [dependencies]
-# maplit = "1"
+# assoc = "0.1"

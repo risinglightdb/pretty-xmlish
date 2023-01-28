@@ -85,7 +85,7 @@ impl PrettyConfig {
                     .unwrap();
                 let xml_node = XmlNode {
                     name: xml.name.clone(),
-                    fields: BTreeMap::from_iter(fields.into_iter()),
+                    fields,
                     fields_is_linear,
                     children,
                 };
