@@ -12,12 +12,14 @@ impl PrettyConfig {
             already_occupied: 0,
         };
         self.horizon(dat.out, width);
-        dat.out.push_str("\n");
-
+        if self.need_boundaries {
+            dat.out.push_str("\n");
+        }
         dat.begin_line();
         dat.line_ascii(&pretty, 0);
-        dat.pusheen();
-
+        if self.need_boundaries {
+            dat.pusheen();
+        }
         self.horizon(dat.out, width);
     }
 

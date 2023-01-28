@@ -16,6 +16,7 @@ impl PrettyConfig {
     pub fn unicode(&mut self, out: &mut String, pretty: &Pretty) -> usize {
         let (pretty, width) = self.interesting_unicode(0, pretty, 0);
         self.width = width;
+        // The second time folds previous lines that can be wrapped with the extended width.
         let (pretty, width) = self.interesting_unicode(0, &pretty, 0);
         let mut dat = LinedBuffer {
             out,
@@ -24,11 +25,15 @@ impl PrettyConfig {
             already_occupied: 0,
         };
         self.horizon(dat.out, width);
-        dat.out.push_str("\n");
+        if self.need_boundaries {
+            dat.out.push_str("\n");
+        }
 
         dat.begin_line();
         dat.line_unicode(&pretty, 0, Default::default());
-        dat.pusheen();
+        if self.need_boundaries {
+            dat.pusheen();
+        }
 
         self.horizon(dat.out, width);
         width
