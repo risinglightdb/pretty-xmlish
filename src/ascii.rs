@@ -1,8 +1,10 @@
 use crate::{LinedBuffer, Pretty, PrettyConfig, XmlNode};
 
 impl PrettyConfig {
-    pub fn ascii(&self, out: &mut String, pretty: &Pretty) {
+    pub fn ascii(&mut self, out: &mut String, pretty: &Pretty) {
         let (pretty, width) = self.interesting_ascii(0, pretty, 0, 0);
+        self.width = width;
+        let (pretty, width) = self.interesting_ascii(0, &pretty, 0, 0);
         let mut dat = LinedBuffer {
             out,
             width,

@@ -13,8 +13,10 @@ mod characters {
 }
 
 impl PrettyConfig {
-    pub fn unicode(&self, out: &mut String, pretty: &Pretty) -> usize {
+    pub fn unicode(&mut self, out: &mut String, pretty: &Pretty) -> usize {
         let (pretty, width) = self.interesting_unicode(0, pretty, 0);
+        self.width = width;
+        let (pretty, width) = self.interesting_unicode(0, &pretty, 0);
         let mut dat = LinedBuffer {
             out,
             width,

@@ -38,7 +38,7 @@ fn main() {
                     "BatchScan",
                     vec![
                         ("table", "t2".into()),
-                        ("columns", Pretty::list_of_strings(&["v1", "v2", "v3"])),
+                        ("columns", Pretty::list_of_strings(&["v1", "v4444444444444444444444444444444444444444444444447777777777777777777777777777772", "v3"])),
                     ],
                 )],
             ),
