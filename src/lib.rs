@@ -3,7 +3,9 @@
 //! ```rust
 //! use pretty_xmlish::{Pretty, PrettyConfig};
 //! use std::collections::BTreeMap;
+//! // This class controls the expected width, indent size, and more.
 //! let mut config = PrettyConfig::default();
+//! // Other factory methods are available
 //! let pretty = Pretty::simple_record("BatchNestedLoopJoin",
 //!     BTreeMap::new(), // fields, if any
 //!     vec![] // children, if any

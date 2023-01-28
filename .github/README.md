@@ -106,3 +106,8 @@ and will try to fill an incomplete line with spaces when asked so.
 ### Edge cases
 
 + All methods handle empty lists and no-children records. No-field records are not tested yet.
+
+## Changelog
+
++ 2022 some time: added Unicode support
++ 2023/01/29: changed from `BTreeMap` to associate vector to preserve insertion order
