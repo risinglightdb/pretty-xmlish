@@ -53,6 +53,9 @@ impl<'a> XmlNode<'a> {
 
     fn ol_build_str_ascii(&self, builder: &mut String) {
         builder.push_str(&self.name);
+        if self.fields.is_empty() {
+            return;
+        }
         builder.push_str(" { ");
         for (i, (k, v)) in self.fields.iter().enumerate() {
             if i > 0 {
@@ -70,7 +73,11 @@ impl<'a> XmlNode<'a> {
             .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
             .sum();
         let mid = self.fields.len().saturating_sub(1) * ", ".len();
-        let begin_end = " {  }".len() + self.name.chars().count();
+        let begin_end = if self.fields.is_empty() {
+            0
+        } else {
+            " {  }".len()
+        } + self.name.chars().count();
         mem + mid + begin_end
     }
 
