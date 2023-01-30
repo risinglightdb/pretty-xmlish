@@ -113,3 +113,4 @@ and will try to fill an incomplete line with spaces when asked so.
 
 + 2022 some time: added Unicode support
 + 2023/01/29: changed from `BTreeMap` to associate vector to preserve insertion order
++ 2023/01/31: fixed a bug related to pretty printing the fields
