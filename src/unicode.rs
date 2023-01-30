@@ -68,7 +68,8 @@ impl PrettyConfig {
             Record(xml) => {
                 let header = xml.name.chars().count() + first_line_base;
                 // Here, `len` does not include the children
-                let fields_is_linear = xml.fields_is_linear || len < self.width;
+                let fields_is_linear = xml.fields_is_linear
+                    || (len < self.width && xml.fields.iter().any(|(_, t)| t.has_children()));
                 let (fields, f_lens): (Vec<_>, Vec<_>) = (xml.fields.iter())
                     .map(|(k, v)| {
                         let additional = k.chars().count() + ": ".len();
