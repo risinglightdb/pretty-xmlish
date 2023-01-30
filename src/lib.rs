@@ -48,7 +48,11 @@ pub struct XmlNode<'a> {
 
 impl<'a> XmlNode<'a> {
     pub fn has_children(&self) -> bool {
-        !self.children.is_empty() || self.fields.iter().map(|(_, x)| x).any(Pretty::has_children)
+        !self.children.is_empty()
+            || (self.fields.iter())
+                .map(|(_, x)| x)
+                .chain(self.children.iter())
+                .any(Pretty::has_children)
     }
 
     fn ol_build_str_ascii(&self, builder: &mut String) {
