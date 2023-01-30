@@ -68,14 +68,11 @@ impl PrettyConfig {
             Record(xml) => {
                 let header = xml.name.chars().count() + first_line_base;
                 // Here, `len` does not include the children
-                let fields_is_linear = len < self.width;
+                let fields_is_linear = xml.fields_is_linear || len < self.width;
                 let (fields, f_lens): (Vec<_>, Vec<_>) = (xml.fields.iter())
                     .map(|(k, v)| {
-                        let (f, len) = self.interesting_unicode(
-                            next_indent,
-                            v,
-                            k.chars().count() + ": ".len(),
-                        );
+                        let additional = k.chars().count() + ": ".len();
+                        let (f, len) = self.interesting_unicode(next_indent, v, additional);
                         ((k.clone(), f), len)
                     })
                     .unzip();
