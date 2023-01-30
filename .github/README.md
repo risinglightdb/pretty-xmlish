@@ -5,6 +5,8 @@ authors:
 start_date: "2022/12/01"
 ---
 
+![](https://img.shields.io/crates/v/pretty-xmlish)
+
 # Wadler-style algebraic pretty printing API for SQL
 
 This RFC proposes a new API for pretty-printing pseudo "structures".
