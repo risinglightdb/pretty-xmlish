@@ -5,7 +5,8 @@ authors:
 start_date: "2022/12/01"
 ---
 
-![](https://img.shields.io/crates/v/pretty-xmlish)
+[![](https://img.shields.io/crates/v/pretty-xmlish)](https://lib.rs/pretty-xmlish)
+[![](https://img.shields.io/docsrs/pretty-xmlish)](https://docs.rs/pretty-xmlish/latest/pretty_xmlish)
 
 # Wadler-style algebraic pretty printing API for SQL
 
