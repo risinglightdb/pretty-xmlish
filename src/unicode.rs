@@ -59,6 +59,9 @@ impl PrettyConfig {
                 (s.as_ref().into(), len)
             }
             Array(v) => {
+                if v.len() == 1 {
+                    return self.interesting_unicode(base_indent, &v[0], additional);
+                }
                 let (v, lens): (Vec<_>, Vec<_>) = (v.iter())
                     .map(|p| self.interesting_unicode(next_indent, p, 0))
                     .unzip();
