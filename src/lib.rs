@@ -250,8 +250,8 @@ impl<'a> LinedBuffer<'a> {
         //     );
         //     self.push(" |\n");
         // } else {
-        self.pip(self.width - self.already_occupied);
         let eol = if self.config.need_boundaries {
+            self.pip(self.width - self.already_occupied);
             " |\n"
         } else {
             "\n"
