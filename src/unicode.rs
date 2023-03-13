@@ -30,7 +30,7 @@ impl PrettyConfig {
         }
 
         dat.begin_line();
-        dat.line_unicode(&pretty, 0, Default::default());
+        dat.line_unicode(&pretty, 0, Default::default(), "");
         if self.need_boundaries {
             dat.pusheen();
         }
@@ -118,7 +118,7 @@ fn append_prefix(editor: &str, indent: usize, start: char, fill: char) -> String
 }
 
 impl<'a> LinedBuffer<'a> {
-    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, indent_len: usize, prefix: &str) {
+    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, indent_len: usize, prefix: &str, one_line_prefix: &str) {
         use Pretty::*;
         let indent_len = indent_len + self.config.indent;
 
@@ -129,10 +129,12 @@ impl<'a> LinedBuffer<'a> {
         use Cubical::*;
         let regularity = match pretty {
             Text(s) => {
+                self.push(one_line_prefix);
                 self.push(s);
                 return;
             }
             Linearized(p, ol_len) => {
+                self.push(one_line_prefix);
                 p.ol_build_str_ascii(self.out);
                 self.already_occupied += ol_len;
                 return;
@@ -171,7 +173,7 @@ impl<'a> LinedBuffer<'a> {
                         choose(is_not_last_line)
                     };
                     self.push(&fields_prefix);
-                    self.line_unicode(p, indent_len, &cont_prefix);
+                    self.line_unicode(p, indent_len, &cont_prefix, "");
                     if is_not_last_line {
                         self.pusheen();
                     }
@@ -201,8 +203,8 @@ impl<'a> LinedBuffer<'a> {
                 let (cont_prefix, fields_prefix) = choose(is_not_last_line);
                 self.push(&fields_prefix);
                 self.push(k);
-                self.push(": ");
-                self.line_unicode(v, indent_len + k.len() + ": ".len(), &cont_prefix);
+                self.push(":");
+                self.line_unicode(v, indent_len + k.len() + ": ".len(), &cont_prefix, " ");
                 if is_not_last_line {
                     self.pusheen();
                 }
@@ -213,7 +215,7 @@ impl<'a> LinedBuffer<'a> {
             let is_not_last_line = i < xml.children.len() - 1;
             let (cont_prefix, fields_prefix) = choose(is_not_last_line);
             self.push(&fields_prefix);
-            self.line_unicode(child, indent_len, &cont_prefix);
+            self.line_unicode(child, indent_len, &cont_prefix, " ");
             if is_not_last_line {
                 self.pusheen();
             }
