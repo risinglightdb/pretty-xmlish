@@ -30,6 +30,9 @@ type Str<'a> = Cow<'a, str>;
 type Pretties<'a> = Cow<'a, [Pretty<'a>]>;
 /// Good kids don't do this.
 type BTreeMap<K, V> = Vec<(K, V)>;
+/// Cow-str associative array
+pub type CowAssocArr<'a> = BTreeMap<Str<'a>, Pretty<'a>>;
+pub type StrAssocArr<'a> = BTreeMap<&'a str, Pretty<'a>>;
 
 pub mod ascii;
 pub mod unicode;
@@ -38,12 +41,12 @@ pub mod helper;
 
 #[derive(Clone)]
 pub struct XmlNode<'a> {
-    pub(crate) name: Str<'a>,
-    pub(crate) fields: BTreeMap<Str<'a>, Pretty<'a>>,
+    pub name: Str<'a>,
+    pub fields: CowAssocArr<'a>,
     /// Currently, if fields have `XmlNode` with children,
     /// they will not be considered during linearization.
     pub(crate) fields_is_linear: bool,
-    pub(crate) children: Vec<Pretty<'a>>,
+    pub children: Vec<Pretty<'a>>,
 }
 
 impl<'a> XmlNode<'a> {
@@ -83,7 +86,7 @@ impl<'a> XmlNode<'a> {
 
     pub fn new(
         name: Str<'a>,
-        fields: BTreeMap<Str<'a>, Pretty<'a>>,
+        fields: CowAssocArr<'a>,
         children: Vec<Pretty<'a>>,
     ) -> Self {
         Self {
@@ -107,7 +110,7 @@ pub enum Pretty<'a> {
 impl<'a> Pretty<'a> {
     pub fn simple_record(
         name: impl Into<Str<'a>>,
-        fields: BTreeMap<&'a str, Self>,
+        fields: StrAssocArr<'a>,
         children: Vec<Self>,
     ) -> Self {
         let name = name.into();
@@ -118,7 +121,7 @@ impl<'a> Pretty<'a> {
     pub fn fieldless_record(name: impl Into<Str<'a>>, children: Vec<Self>) -> Self {
         Self::simple_record(name, Default::default(), children)
     }
-    pub fn childless_record(name: impl Into<Str<'a>>, fields: BTreeMap<&'a str, Self>) -> Self {
+    pub fn childless_record(name: impl Into<Str<'a>>, fields: StrAssocArr<'a>) -> Self {
         Self::simple_record(name, fields, Default::default())
     }
     pub fn list_of_strings(list: &'a [&'a str]) -> Self {
