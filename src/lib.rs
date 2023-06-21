@@ -22,7 +22,7 @@ use std::{
     iter::repeat,
 };
 
-type Str<'a> = Cow<'a, str>;
+pub type Str<'a> = Cow<'a, str>;
 /// This is recommended by `@rami3l` to supercede `Vec<Pretty>`.
 /// Why not use this? Because Rust wouldn't let me!
 /// https://github.com/rust-lang/rust/issues/23714
@@ -50,6 +50,16 @@ pub struct XmlNode<'a> {
 }
 
 impl<'a> XmlNode<'a> {
+    pub fn simple_record(
+        name: impl Into<Str<'a>>,
+        fields: StrAssocArr<'a>,
+        children: Vec<Pretty<'a>>,
+    ) -> Self {
+        let name = name.into();
+        let fields = fields.into_iter().map(|(k, v)| (k.into(), v)).collect();
+        Self::new(name, fields, children)
+    }
+
     pub fn has_children(&self) -> bool {
         !self.children.is_empty() || (self.fields.iter()).any(|(_, x)| x.has_children())
     }
@@ -113,9 +123,7 @@ impl<'a> Pretty<'a> {
         fields: StrAssocArr<'a>,
         children: Vec<Self>,
     ) -> Self {
-        let name = name.into();
-        let fields = fields.into_iter().map(|(k, v)| (k.into(), v)).collect();
-        Self::Record(XmlNode::new(name, fields, children))
+        Self::Record(XmlNode::simple_record(name, fields, children))
     }
     // Blame Rust for not having named arguments and default values.
     pub fn fieldless_record(name: impl Into<Str<'a>>, children: Vec<Self>) -> Self {
