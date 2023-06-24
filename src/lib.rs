@@ -81,9 +81,9 @@ impl<'a> XmlNode<'a> {
         builder.push_str(" }");
     }
 
-    fn ol_len(&self) -> usize {
+    fn ol_len(&self, reduced_ws: bool) -> usize {
         let mem: usize = (self.fields.iter())
-            .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len())
+            .map(|(k, v)| k.chars().count() + ": ".len() + v.ol_len(reduced_ws))
             .sum();
         let mid = self.fields.len().saturating_sub(1) * ", ".len();
         let begin_end = if self.fields.is_empty() {
@@ -94,11 +94,7 @@ impl<'a> XmlNode<'a> {
         mem + mid + begin_end
     }
 
-    pub fn new(
-        name: Str<'a>,
-        fields: CowAssocArr<'a>,
-        children: Vec<Pretty<'a>>,
-    ) -> Self {
+    pub fn new(name: Str<'a>, fields: CowAssocArr<'a>, children: Vec<Pretty<'a>>) -> Self {
         Self {
             name,
             fields,
@@ -181,24 +177,24 @@ impl<'a> Pretty<'a> {
     }
 
     pub fn to_one_line_string(&self) -> String {
-        let mut builder = String::with_capacity(self.ol_len());
+        let mut builder = String::with_capacity(self.ol_len(false));
         self.ol_build_str_ascii(&mut builder);
         builder
     }
 
     /// Does not include children of records.
-    pub(crate) fn ol_len(&self) -> usize {
+    pub(crate) fn ol_len(&self, reduced_ws: bool) -> usize {
         use Pretty::*;
         match self {
             Text(s) => s.chars().count(),
-            Record(xml) => xml.ol_len(),
+            Record(xml) => xml.ol_len(reduced_ws),
             Array(v) => {
                 if v.is_empty() {
                     return "[]".len();
                 }
-                let mem: usize = v.iter().map(Self::ol_len).sum();
+                let mem: usize = v.iter().map(|x| x.ol_len(reduced_ws)).sum();
                 let mid = (v.len() - 1) * ", ".len();
-                let beg = "[  ]".len();
+                let beg = if reduced_ws { "[]".len() } else { "[  ]".len() };
                 mem + mid + beg
             }
             Linearized(_, len) => *len,

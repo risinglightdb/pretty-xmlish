@@ -46,7 +46,7 @@ impl PrettyConfig {
         additional: usize,
     ) -> (Pretty<'a>, usize) {
         let first_line_base = base_indent + additional;
-        let ol_len = pretty.ol_len();
+        let ol_len = pretty.ol_len(self.reduced_spaces);
         let len = ol_len + first_line_base;
         if !pretty.has_children() && len <= self.width {
             return (Pretty::Linearized(pretty, ol_len), len);
@@ -118,7 +118,13 @@ fn append_prefix(editor: &str, indent: usize, start: char, fill: char) -> String
 }
 
 impl<'a> LinedBuffer<'a> {
-    pub(crate) fn line_unicode(&mut self, pretty: &Pretty, indent_len: usize, prefix: &str, one_line_prefix: &str) {
+    pub(crate) fn line_unicode(
+        &mut self,
+        pretty: &Pretty,
+        indent_len: usize,
+        prefix: &str,
+        one_line_prefix: &str,
+    ) {
         use Pretty::*;
         let indent_len = indent_len + self.config.indent;
 
@@ -192,7 +198,7 @@ impl<'a> LinedBuffer<'a> {
         let has_children = xml.has_children();
         if xml.fields_is_linear {
             xml.ol_build_str_ascii(self.out);
-            self.already_occupied += xml.ol_len();
+            self.already_occupied += xml.ol_len(self.config.reduced_spaces);
             self.pusheen();
         } else {
             self.push(&xml.name);

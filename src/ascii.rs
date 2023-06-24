@@ -31,7 +31,7 @@ impl PrettyConfig {
         end_add: usize,
     ) -> (Pretty<'a>, usize) {
         let first_line_base = base_indent + start_add + end_add;
-        let ol_len = pretty.ol_len();
+        let ol_len = pretty.ol_len(self.reduced_spaces);
         let len = ol_len + first_line_base;
         if !pretty.has_children() && len <= self.width {
             return (Pretty::Linearized(pretty, ol_len), len);
