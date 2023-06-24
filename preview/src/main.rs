@@ -51,5 +51,8 @@ fn main() {
     config.reduced_spaces = true;
     config.unicode(&mut out, &pretty);
     // config.ascii(&mut out, &pretty);
+    out.push('\n');
+    config.indent = 3;
+    config.unicode(&mut out, &pretty);
     println!("{}\nActual width: {}", out, w);
 }
