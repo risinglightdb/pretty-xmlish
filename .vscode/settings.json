@@ -1,3 +1,6 @@
 {
-  "git-blame.gitWebUrl": ""
+  "git-blame.gitWebUrl": "",
+  "rust-analyzer.linkedProjects": [
+    "./preview/Cargo.toml"
+  ]
 }

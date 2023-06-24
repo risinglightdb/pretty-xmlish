@@ -103,18 +103,21 @@ impl PrettyConfig {
             Linearized(_, l) => (pretty.clone(), *l),
         }
     }
-}
 
-fn append_prefix(editor: &str, indent: usize, start: char, fill: char) -> String {
-    let mut editor = editor.to_string();
-    let mut remaining = indent;
-    if remaining > 1 {
-        editor.push(start);
-        remaining -= 1;
+    pub(crate) fn append_prefix(&self, editor: &str, start: char, fill: char) -> String {
+        let indent = self.indent;
+        let mut editor = editor.to_string();
+        let mut remaining = indent;
+        if remaining > 1 {
+            editor.push(start);
+            remaining -= 1;
+        }
+        editor.extend(repeat(fill).take(remaining - 1));
+        if !self.reduced_spaces {
+            editor.push(' ');
+        }
+        editor
     }
-    editor.extend(repeat(fill).take(remaining - 1));
-    editor.push(' ');
-    editor
 }
 
 impl<'a> LinedBuffer<'a> {
@@ -149,11 +152,10 @@ impl<'a> LinedBuffer<'a> {
             Array(list) => Cartesian(list),
         };
         use characters::*;
-        let idt = self.config.indent;
-        let cont_prefix = append_prefix(prefix, idt, UD, ' ');
-        let last_cont_prefix = append_prefix(prefix, idt, ' ', ' ');
-        let fields_prefix = append_prefix(prefix, idt, URD, LR);
-        let last_field_prefix = append_prefix(prefix, idt, UR, LR);
+        let cont_prefix = self.config.append_prefix(prefix, UD, ' ');
+        let last_cont_prefix = self.config.append_prefix(prefix, ' ', ' ');
+        let fields_prefix = self.config.append_prefix(prefix, URD, LR);
+        let last_field_prefix = self.config.append_prefix(prefix, UR, LR);
         let choose = |is_not_last_line: bool| {
             if is_not_last_line {
                 (&cont_prefix, &fields_prefix)
@@ -168,7 +170,7 @@ impl<'a> LinedBuffer<'a> {
                     return;
                 }
                 use characters::*;
-                let fst_field_prefix = append_prefix(prefix, idt, DR, LR);
+                let fst_field_prefix = self.config.append_prefix(prefix, DR, LR);
                 self.pusheen();
                 for (i, p) in list.iter().enumerate() {
                     self.begin_line();

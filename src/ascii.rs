@@ -126,7 +126,7 @@ impl<'a> LinedBuffer<'a> {
             }
             Record(xml) => self.line_ascii_xml(xml, indent_len, self_indent_len),
             Linearized(p, ol_len) => {
-                p.ol_build_str_ascii(self.out);
+                p.ol_build_str_ascii(self.config.reduced_spaces, self.out);
                 self.already_occupied += ol_len;
             }
         }
