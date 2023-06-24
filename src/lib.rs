@@ -180,9 +180,7 @@ impl<'a> Pretty<'a> {
         }
     }
 
-    #[allow(dead_code)]
-    /// For debugging purposes.
-    fn ol_to_string(&self) -> String {
+    pub fn to_one_line_string(&self) -> String {
         let mut builder = String::with_capacity(self.ol_len());
         self.ol_build_str_ascii(&mut builder);
         builder
@@ -213,13 +211,16 @@ impl<'a, T: Into<Str<'a>>> From<T> for Pretty<'a> {
         Pretty::Text(s.into())
     }
 }
-#[derive(Clone)]
 
+#[derive(Clone)]
 pub struct PrettyConfig {
     pub indent: usize,
     /// Preferred width of the output, exlusive of the boundaries.
     pub width: usize,
     pub need_boundaries: bool,
+    /// If true, then there will not be space before record name and enclosed
+    /// in lists.
+    pub reduced_spaces: bool,
 }
 
 impl PrettyConfig {
@@ -279,6 +280,7 @@ impl Default for PrettyConfig {
             indent: 4,
             width: 120,
             need_boundaries: true,
+            reduced_spaces: false,
         }
     }
 }
