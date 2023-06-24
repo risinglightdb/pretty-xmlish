@@ -64,7 +64,7 @@ impl<'a> XmlNode<'a> {
         !self.children.is_empty() || (self.fields.iter()).any(|(_, x)| x.has_children())
     }
 
-    fn ol_build_str_ascii(&self, builder: &mut String) {
+    fn ol_build_str_ascii(&self, reduced_ws: bool, builder: &mut String) {
         builder.push_str(&self.name);
         if self.fields.is_empty() {
             return;
@@ -76,7 +76,7 @@ impl<'a> XmlNode<'a> {
             }
             builder.push_str(k);
             builder.push_str(": ");
-            v.ol_build_str_ascii(builder);
+            v.ol_build_str_ascii(reduced_ws, builder);
         }
         builder.push_str(" }");
     }
@@ -153,32 +153,38 @@ impl<'a> Pretty<'a> {
 
     /// Potential improvements: instead of using a mutable String,
     /// use a Write trait with monadic error reporting.
-    pub(crate) fn ol_build_str_ascii(&self, builder: &mut String) {
+    pub(crate) fn ol_build_str_ascii(&self, reduced_ws: bool, builder: &mut String) {
         use Pretty::*;
         match self {
             Text(s) => builder.push_str(s),
-            Record(xml) => xml.ol_build_str_ascii(builder),
+            Record(xml) => xml.ol_build_str_ascii(reduced_ws, builder),
             Array(v) => {
                 if v.is_empty() {
                     builder.push_str("[]");
                     return;
                 }
-                builder.push_str("[ ");
+                builder.push('[');
+                if !reduced_ws {
+                    builder.push(' ');
+                }
                 for (i, e) in v.iter().enumerate() {
                     if i > 0 {
                         builder.push_str(", ");
                     }
-                    e.ol_build_str_ascii(builder);
+                    e.ol_build_str_ascii(reduced_ws, builder);
                 }
-                builder.push_str(" ]");
+                if !reduced_ws {
+                    builder.push(' ');
+                }
+                builder.push(']');
             }
-            Linearized(p, _) => p.ol_build_str_ascii(builder),
+            Linearized(p, _) => p.ol_build_str_ascii(reduced_ws, builder),
         }
     }
 
-    pub fn to_one_line_string(&self) -> String {
-        let mut builder = String::with_capacity(self.ol_len(false));
-        self.ol_build_str_ascii(&mut builder);
+    pub fn to_one_line_string(&self, reduced_ws: bool) -> String {
+        let mut builder = String::with_capacity(self.ol_len(reduced_ws));
+        self.ol_build_str_ascii(reduced_ws, &mut builder);
         builder
     }
 

@@ -141,7 +141,7 @@ impl<'a> LinedBuffer<'a> {
             }
             Linearized(p, ol_len) => {
                 self.push(one_line_prefix);
-                p.ol_build_str_ascii(self.out);
+                p.ol_build_str_ascii(self.config.reduced_spaces, self.out);
                 self.already_occupied += ol_len;
                 return;
             }
@@ -197,8 +197,9 @@ impl<'a> LinedBuffer<'a> {
     ) {
         let has_children = xml.has_children();
         if xml.fields_is_linear {
-            xml.ol_build_str_ascii(self.out);
-            self.already_occupied += xml.ol_len(self.config.reduced_spaces);
+            let reduced_ws = self.config.reduced_spaces;
+            xml.ol_build_str_ascii(reduced_ws, self.out);
+            self.already_occupied += xml.ol_len(reduced_ws);
             self.pusheen();
         } else {
             self.push(&xml.name);
