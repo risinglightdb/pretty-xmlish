@@ -224,7 +224,8 @@ impl<'a> LinedBuffer<'a> {
             let is_not_last_line = i < xml.children.len() - 1;
             let (cont_prefix, fields_prefix) = choose(is_not_last_line);
             self.push(&fields_prefix);
-            self.line_unicode(child, indent_len, &cont_prefix, " ");
+            // let prefix = if self.config.reduced_spaces { "" } else { " " };
+            self.line_unicode(child, indent_len, &cont_prefix, "");
             if is_not_last_line {
                 self.pusheen();
             }
